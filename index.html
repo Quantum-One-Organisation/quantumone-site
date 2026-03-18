@@ -101,7 +101,7 @@
     }
 
     .logo img {
-      width: 220px;
+      width: 264px;
       max-width: 100%;
       height: auto;
     }
@@ -126,7 +126,7 @@
 
     /* ── Accent line ── */
     .accent-line {
-      width: 100px;
+      width: 300px;
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--accent-purple), var(--accent-pink), transparent);
       border-radius: 1px;
@@ -370,6 +370,9 @@
 
   </div>
 
+  <!-- Hidden iframe for Google Form submission -->
+  <iframe name="google-form-target" id="googleFormTarget" style="display:none;"></iframe>
+
   <script>
     function handleSubmit(e) {
       e.preventDefault();
@@ -378,12 +381,24 @@
       const form = document.getElementById('earlyAccessForm');
       const success = document.getElementById('formSuccess');
       const note = document.getElementById('formNote');
-      const btn = document.getElementById('submitBtn');
 
-      // TODO: Replace with actual endpoint (SES, API Gateway, or Google Form)
-      // For now, just show success state
-      console.log('Early access signup:', email);
+      // Submit to Google Form via hidden iframe
+      const googleForm = document.createElement('form');
+      googleForm.method = 'POST';
+      googleForm.action = 'https://docs.google.com/forms/d/e/1FAIpQLScdKzTfV8XFIxG9m-l0yO79t5o8TIbCy0ysPtKJQ6DGiGuRGw/formResponse';
+      googleForm.target = 'google-form-target';
+      googleForm.style.display = 'none';
 
+      const input = document.createElement('input');
+      input.name = 'entry.1125282240';
+      input.value = email;
+      googleForm.appendChild(input);
+
+      document.body.appendChild(googleForm);
+      googleForm.submit();
+      document.body.removeChild(googleForm);
+
+      // Show success state
       form.style.display = 'none';
       note.style.display = 'none';
       success.style.display = 'block';
