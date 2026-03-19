@@ -102,7 +102,7 @@
     }
 
     .logo img {
-      width: 330px;
+      width: 297px;
       max-width: 100%;
       height: auto;
     }
@@ -131,7 +131,7 @@
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--accent-purple), var(--accent-pink), transparent);
       border-radius: 1px;
-      margin-bottom: 48px;
+      margin-bottom: 68px;
     }
 
     /* ── Headline ── */
@@ -164,6 +164,66 @@
       max-width: 480px;
     }
 
+    /* ── Data Sources ── */
+    .sources-section {
+      width: 100%;
+      max-width: 540px;
+      margin-bottom: 56px;
+      text-align: center;
+    }
+
+    .sources-label {
+      font-size: 19px;
+      font-weight: 500;
+      color: #b8b2cc;
+      letter-spacing: 0.3px;
+      margin-bottom: 36px;
+    }
+
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 34px 12px;
+    }
+
+    .source-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .source-item img {
+      width: 38px;
+      height: 38px;
+      opacity: 0.7;
+      filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.25));
+      transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .source-item:hover img {
+      opacity: 1;
+      filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.5));
+    }
+
+    .source-item span {
+      font-size: 12.5px;
+      color: #7d7896;
+      line-height: 1.3;
+      transition: color 0.2s ease;
+    }
+
+    .source-item:hover span {
+      color: #9a93b0;
+    }
+
+    @media (max-width: 520px) {
+      .sources-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px 10px;
+      }
+    }
+
     /* ── Card ── */
     .card {
       width: 100%;
@@ -174,7 +234,7 @@
       border-top-color: var(--border-glow-top);
       box-shadow: 0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3);
       padding: 36px 32px;
-      margin-bottom: 48px;
+      margin-bottom: 72px;
     }
 
     .card-label {
@@ -315,7 +375,7 @@
 
     <!-- Logo -->
     <div class="logo">
-      <img src="./Logo/Combo_Wordmark.png" alt="QuantumOne — Personal Optimisation Engine" />
+      <img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" />
     </div>
 
     <!-- Accent line -->
@@ -352,6 +412,65 @@
       </div>
 
       <div class="form-note" id="formNote">No spam. Just a launch notification.</div>
+    </div>
+
+    <!-- Data Sources -->
+    <div class="sources-section">
+      <div class="sources-label">The world's first personal optimisation engine</div>
+      <div class="sources-grid">
+        <div class="source-item">
+          <img src="./Icons/DNA-Icon.svg" alt="Genetics" />
+          <span>Genetics</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" />
+          <span>Nootropics &amp; Supps</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Sleep-Icon.svg" alt="Sleep" />
+          <span>Sleep</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" />
+          <span>Biohacks</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" />
+          <span>Blood Tests</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" />
+          <span>Air, Mould &amp; Pollen</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" />
+          <span>Tap Water Quality</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" />
+          <span>Nutrition</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" />
+          <span>DEXA Scans</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" />
+          <span>Body Composition</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Fitness-Icon.svg" alt="Exercise" />
+          <span>Exercise</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Heart-Icon.svg" alt="Heart Health" />
+          <span>Heart Health</span>
+        </div>
+        <div class="source-item">
+          <img src="./Icons/Environment-Icon.svg" alt="Environment" />
+          <span>Environment</span>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->
