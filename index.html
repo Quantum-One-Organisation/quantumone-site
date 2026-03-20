@@ -84,7 +84,7 @@
     .container {
       position: relative;
       z-index: 1;
-      max-width: 640px;
+      max-width: 720px;
       margin: 0 auto;
       padding: 0 24px;
       display: flex;
@@ -105,6 +105,7 @@
       width: 297px;
       max-width: 100%;
       height: auto;
+      animation: logoPulse 6s ease-in-out infinite;
     }
 
     /* Fallback text logo if image hasn't been set yet */
@@ -132,6 +133,85 @@
       background: linear-gradient(90deg, transparent, var(--accent-purple), var(--accent-pink), transparent);
       border-radius: 1px;
       margin-bottom: 68px;
+      animation: accentPulse 5s ease-in-out infinite;
+    }
+
+    @keyframes accentPulse {
+      0%, 100% { opacity: 0.4; box-shadow: 0 0 4px rgba(147, 51, 234, 0.08); }
+      50% { opacity: 0.7; box-shadow: 0 0 12px rgba(147, 51, 234, 0.2), 0 0 24px rgba(192, 38, 211, 0.08); }
+    }
+
+    /* ── Logo pulse ── */
+    @keyframes logoPulse {
+      0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+      50% { filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.12)); }
+    }
+
+    /* ── Custom cursor ── */
+    .cursor-glow {
+      position: fixed;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(147, 51, 234, 0.01) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+    }
+
+    .cursor-glow.visible {
+      opacity: 1;
+    }
+
+    .cursor-glow.hovering {
+      width: 200px;
+      height: 200px;
+    }
+
+    /* ── Scroll fade-in ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Card tilt ── */
+    .card {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    /* ── Connection lines canvas ── */
+    .connection-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Icon glow state ── */
+    .source-item img.glowing {
+      opacity: 1;
+      filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.5));
+      transition: opacity 0.3s ease, filter 0.3s ease;
+    }
+
+    .source-item img.glow-fade {
+      opacity: 0.5;
+      filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.25));
+      transition: opacity 0.8s ease, filter 0.8s ease;
+    }
+
+    @media (max-width: 520px) {
+      .cursor-glow { display: none; }
     }
 
     /* ── Headline ── */
@@ -141,8 +221,9 @@
       color: var(--text-primary);
       text-align: center;
       line-height: 1.3;
-      margin-bottom: 20px;
+      margin-bottom: 28px;
       letter-spacing: -0.3px;
+      white-space: nowrap;
     }
 
     .headline em {
@@ -153,6 +234,38 @@
       background-clip: text;
     }
 
+    .headline .hero-gradient {
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    }
+
+    .mobile-break {
+      display: none;
+    }
+
+    /* ── Rotating word ── */
+    .rotating-word {
+      display: inline-block;
+      position: relative;
+      transition: width 0.8s ease;
+      vertical-align: baseline;
+    }
+
+    .rotating-word span {
+      display: inline-block;
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+      transition: opacity 0.9s ease;
+      white-space: nowrap;
+      -webkit-text-fill-color: var(--text-primary);
+    }
+
+    .rotating-word span.active {
+      opacity: 1;
+      position: relative;
+    }
+
     /* ── Subtext ── */
     .subtext {
       font-size: 16px;
@@ -161,15 +274,21 @@
       text-align: center;
       line-height: 1.7;
       margin-bottom: 48px;
-      max-width: 480px;
+      max-width: 560px;
+    }
+
+    .subtext-lead {
+      color: #c8c2d8;
+      font-weight: 500;
     }
 
     /* ── Data Sources ── */
     .sources-section {
       width: 100%;
-      max-width: 540px;
+      max-width: 600px;
       margin-bottom: 56px;
       text-align: center;
+      position: relative;
     }
 
     .sources-label {
@@ -183,7 +302,9 @@
     .sources-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 34px 12px;
+      gap: 48px 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .source-item {
@@ -194,9 +315,9 @@
     }
 
     .source-item img {
-      width: 38px;
-      height: 38px;
-      opacity: 0.7;
+      width: 44px;
+      height: 44px;
+      opacity: 0.5;
       filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.25));
       transition: opacity 0.2s ease, filter 0.2s ease;
     }
@@ -220,14 +341,14 @@
     @media (max-width: 520px) {
       .sources-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 24px 10px;
+        gap: 30px 10px;
       }
     }
 
     /* ── Card ── */
     .card {
       width: 100%;
-      max-width: 460px;
+      max-width: 520px;
       background: linear-gradient(165deg, rgba(30, 24, 52, 0.95), rgba(18, 14, 32, 0.98));
       border-radius: 18px;
       border: 1px solid var(--border-glow);
@@ -346,6 +467,11 @@
     @media (max-width: 520px) {
       .headline {
         font-size: 26px;
+        white-space: normal;
+      }
+
+      .mobile-break {
+        display: block;
       }
 
       .subtext {
@@ -382,16 +508,16 @@
     <div class="accent-line"></div>
 
     <!-- Headline -->
-    <h1 class="headline">The shortest path to <em>self-optimisation</em></h1>
+    <h1 class="headline fade-in">The <em><span class="rotating-word" id="rotatingWord"><span class="active">fastest</span><span>modern</span><span>quickest</span><span>shortest</span></span></em> path to <span class="mobile-break"></span><em class="hero-gradient">self-optimisation</em>.</h1>
 
     <!-- Subtext -->
-    <p class="subtext">
-      QuantumOne turns your health data into clear, actionable advice — automatically.
-      No more guesswork. No more wasted effort. Just continuous, evidence-based improvement.
+    <p class="subtext fade-in">
+      <span class="subtext-lead">The world's first Personal Optimisation Engine.</span><br/>
+      The engine uncovers complex interactions between your biohacks, genetics, blood, nootropics, and surroundings to uncover previously impossible insights. You receive precise actions to move you into continuous accelerated growth.
     </p>
 
     <!-- Email capture card -->
-    <div class="card">
+    <div class="card fade-in" id="tiltCard">
       <div class="card-label">Get early access</div>
 
       <form class="email-form" id="earlyAccessForm" onsubmit="return handleSubmit(event)">
@@ -416,57 +542,58 @@
 
     <!-- Data Sources -->
     <div class="sources-section">
-      <div class="sources-label">The world's first personal optimisation engine</div>
+      <div class="sources-label fade-in">The world's first personal optimisation engine</div>
+      <canvas class="connection-canvas" id="connectionCanvas"></canvas>
       <div class="sources-grid">
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.05s;">
           <img src="./Icons/DNA-Icon.svg" alt="Genetics" />
           <span>Genetics</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.1s;">
           <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" />
           <span>Nootropics &amp; Supps</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.15s;">
           <img src="./Icons/Sleep-Icon.svg" alt="Sleep" />
           <span>Sleep</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.2s;">
           <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" />
           <span>Biohacks</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.25s;">
           <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" />
           <span>Blood Tests</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.3s;">
           <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" />
           <span>Air, Mould &amp; Pollen</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.35s;">
           <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" />
           <span>Tap Water Quality</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.4s;">
           <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" />
           <span>Nutrition</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.45s;">
           <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" />
           <span>DEXA Scans</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.5s;">
           <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" />
           <span>Body Composition</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.55s;">
           <img src="./Icons/Fitness-Icon.svg" alt="Exercise" />
           <span>Exercise</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.6s;">
           <img src="./Icons/Heart-Icon.svg" alt="Heart Health" />
           <span>Heart Health</span>
         </div>
-        <div class="source-item">
+        <div class="source-item fade-in" style="transition-delay: 0.65s;">
           <img src="./Icons/Environment-Icon.svg" alt="Environment" />
           <span>Environment</span>
         </div>
@@ -491,10 +618,14 @@
 
   </div>
 
+  <!-- Custom cursor -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+
   <!-- Hidden iframe for Google Form submission -->
   <iframe name="google-form-target" id="googleFormTarget" style="display:none;"></iframe>
 
   <script>
+    // ── Form submission ──
     function handleSubmit(e) {
       e.preventDefault();
 
@@ -503,7 +634,6 @@
       const success = document.getElementById('formSuccess');
       const note = document.getElementById('formNote');
 
-      // Submit to Google Form via hidden iframe
       const googleForm = document.createElement('form');
       googleForm.method = 'POST';
       googleForm.action = 'https://docs.google.com/forms/d/e/1FAIpQLScdKzTfV8XFIxG9m-l0yO79t5o8TIbCy0ysPtKJQ6DGiGuRGw/formResponse';
@@ -519,10 +649,243 @@
       googleForm.submit();
       document.body.removeChild(googleForm);
 
-      // Show success state
       form.style.display = 'none';
       note.style.display = 'none';
       success.style.display = 'block';
+    }
+
+    // ── Rotating word ──
+    const rotatingWord = document.getElementById('rotatingWord');
+    if (rotatingWord) {
+      const words = rotatingWord.querySelectorAll('span');
+      let currentIndex = 0;
+
+      // Set initial width
+      rotatingWord.style.width = words[0].offsetWidth + 'px';
+
+      setInterval(() => {
+        words[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % words.length;
+        words[currentIndex].classList.add('active');
+        rotatingWord.style.width = words[currentIndex].offsetWidth + 'px';
+      }, 4750);
+    }
+
+    // ── Scroll fade-in with Intersection Observer ──
+    const fadeEls = document.querySelectorAll('.fade-in');
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          fadeObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    fadeEls.forEach(el => fadeObserver.observe(el));
+
+    // ── 3D tilt on card ──
+    const card = document.getElementById('tiltCard');
+    if (card) {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = (y - centerY) / centerY * -2;
+        const rotateY = (x - centerX) / centerX * 2;
+
+        card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        card.style.boxShadow = `${-rotateY * 1.5}px ${rotateX * 1.5}px 40px rgba(100, 40, 200, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
+        card.style.boxShadow = '0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3)';
+      });
+    }
+
+    // ── Custom cursor ──
+    const cursor = document.getElementById('cursorGlow');
+    const isTouchDevice = 'ontouchstart' in window;
+
+    if (!isTouchDevice && cursor) {
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        if (!cursor.classList.contains('visible')) cursor.classList.add('visible');
+      });
+
+      document.addEventListener('mouseleave', () => {
+        cursor.classList.remove('visible');
+      });
+
+      // Enlarge cursor on interactive elements
+      const interactives = document.querySelectorAll('a, button, input, .source-item');
+      interactives.forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+      });
+    }
+
+    // ── Unified connection lines + icon glow system ──
+    const icons = document.querySelectorAll('.source-item img');
+    const canvas = document.getElementById('connectionCanvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    let traces = [];
+
+    function resizeCanvas() {
+      if (!canvas) return;
+      const section = canvas.parentElement;
+      canvas.width = section.offsetWidth;
+      canvas.height = section.offsetHeight;
+    }
+
+    function getIconCenters() {
+      if (!canvas) return [];
+      const sectionRect = canvas.parentElement.getBoundingClientRect();
+      return Array.from(icons).map((icon, i) => {
+        const rect = icon.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2 - sectionRect.left,
+          y: rect.top + rect.height / 2 - sectionRect.top,
+          index: i
+        };
+      });
+    }
+
+    function spawnTrace() {
+      const centers = getIconCenters();
+      if (centers.length < 2) return;
+
+      // Pick 2-4 unique icons
+      const count = 3 + Math.floor(Math.random() * 2);
+      const picked = [];
+      while (picked.length < Math.min(count, centers.length)) {
+        const idx = Math.floor(Math.random() * centers.length);
+        if (!picked.includes(idx)) picked.push(idx);
+      }
+
+      const waypoints = picked.map(i => centers[i]);
+
+      traces.push({
+        waypoints: waypoints,
+        iconIndices: picked,
+        currentSegment: 0,
+        segmentProgress: 0,
+        phase: 'drawing',
+        opacity: 0.08,
+        holdTime: 0,
+        litIcons: [picked[0]]
+      });
+
+      // Light up the first icon immediately
+      icons[picked[0]].classList.add('glowing');
+    }
+
+    function drawTraces() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      traces = traces.filter(t => {
+        if (t.phase === 'drawing') {
+          t.segmentProgress += 0.025;
+
+          // When line reaches next waypoint, light up that icon
+          if (t.segmentProgress >= 1) {
+            t.currentSegment++;
+            t.segmentProgress = 0;
+
+            // Light the icon we just arrived at
+            if (t.currentSegment < t.waypoints.length) {
+              const iconIdx = t.iconIndices[t.currentSegment];
+              if (!t.litIcons.includes(iconIdx)) {
+                t.litIcons.push(iconIdx);
+                icons[iconIdx].classList.add('glowing');
+              }
+            }
+
+            // If we've completed all segments, move to hold
+            if (t.currentSegment >= t.waypoints.length - 1) {
+              t.phase = 'hold';
+              t.holdTime = 0;
+            }
+          }
+        } else if (t.phase === 'hold') {
+          t.holdTime += 0.016;
+          if (t.holdTime > 0.6) t.phase = 'fading';
+        } else if (t.phase === 'fading') {
+          t.opacity -= 0.002;
+          if (t.opacity <= 0) {
+            // Return all icons to default
+            t.iconIndices.forEach(idx => {
+              icons[idx].classList.remove('glowing');
+              icons[idx].classList.add('glow-fade');
+              setTimeout(() => icons[idx].classList.remove('glow-fade'), 800);
+            });
+            return false;
+          }
+        }
+
+        // Draw all completed segments
+        ctx.strokeStyle = `rgba(147, 51, 234, ${t.opacity})`;
+        ctx.lineWidth = 1;
+
+        for (let s = 0; s < t.waypoints.length - 1; s++) {
+          const from = t.waypoints[s];
+          const to = t.waypoints[s + 1];
+
+          if (s < t.currentSegment) {
+            // Fully drawn segment
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+          } else if (s === t.currentSegment && t.phase === 'drawing') {
+            // Currently drawing segment
+            const endX = from.x + (to.x - from.x) * t.segmentProgress;
+            const endY = from.y + (to.y - from.y) * t.segmentProgress;
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+          }
+        }
+
+        return true;
+      });
+
+      requestAnimationFrame(drawTraces);
+    }
+
+    function startTraces() {
+      if (!canvas) return;
+      resizeCanvas();
+      drawTraces();
+
+      function scheduleNext() {
+        setTimeout(() => {
+          spawnTrace();
+          scheduleNext();
+        }, 2000 + Math.random() * 1500);
+      }
+
+      setTimeout(() => { spawnTrace(); scheduleNext(); }, 1000);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Start when sources section is visible
+    const sourcesSection = document.querySelector('.sources-section');
+    if (sourcesSection) {
+      const connObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          startTraces();
+          connObserver.unobserve(sourcesSection);
+        }
+      }, { threshold: 0.1 });
+      connObserver.observe(sourcesSection);
     }
   </script>
 
