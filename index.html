@@ -179,18 +179,6 @@
       height: 200px;
     }
 
-    /* ── Scroll fade-in ── */
-    .fade-in {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
-    .fade-in.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     /* ── Card tilt ── */
     .card {
       transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -463,6 +451,7 @@
     .advice-carousel {
       position: relative;
       min-height: 220px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .advice-card {
@@ -564,7 +553,11 @@
 
     .footer-links {
       font-size: 11px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
+    }
+
+    .footer-links-secondary {
+      margin-bottom: 20px;
     }
 
     .footer-links a {
@@ -630,16 +623,16 @@
     <div class="accent-line"></div>
 
     <!-- Headline -->
-    <h1 class="headline fade-in">The <em><span class="rotating-word" id="rotatingWord"><span class="active">fastest</span><span>modern</span><span>quickest</span><span>shortest</span></span></em> path to <span class="mobile-break"></span><em class="hero-gradient">self-optimisation</em>.</h1>
+    <h1 class="headline">The <em><span class="rotating-word" id="rotatingWord"><span class="active">fastest</span><span>modern</span><span>quickest</span><span>shortest</span></span></em> path to <span class="mobile-break"></span><em class="hero-gradient">self-optimisation</em>.</h1>
 
     <!-- Subtext -->
-    <p class="subtext fade-in">
+    <p class="subtext">
       <span class="subtext-lead">The world's first Personal Optimisation Engine.</span><br/>
       The engine uncovers complex interactions between your biohacks, genetics, blood, nootropics, and surroundings to uncover previously impossible insights. You receive precise actions to move you into continuous accelerated growth.
     </p>
 
     <!-- Email capture card -->
-    <div class="card fade-in" id="tiltCard">
+    <div class="card" id="tiltCard">
       <div class="card-label">Get early access</div>
 
       <form class="email-form" id="earlyAccessForm" onsubmit="return handleSubmit(event)">
@@ -664,66 +657,66 @@
 
     <!-- Data Sources -->
     <div class="sources-section">
-      <div class="sources-label fade-in">The world's first personal optimisation engine</div>
+      <div class="sources-label">The world's first personal optimisation engine</div>
       <canvas class="connection-canvas" id="connectionCanvas"></canvas>
       <div class="sources-grid">
-        <div class="source-item fade-in" style="transition-delay: 0.05s;">
+        <div class="source-item">
           <img src="./Icons/DNA-Icon.svg" alt="Genetics" />
           <span>Genetics</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.1s;">
+        <div class="source-item">
           <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" />
           <span>Nootropics &amp; Supps</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.15s;">
+        <div class="source-item">
           <img src="./Icons/Sleep-Icon.svg" alt="Sleep" />
           <span>Sleep</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.2s;">
+        <div class="source-item">
           <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" />
           <span>Biohacks</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.25s;">
+        <div class="source-item">
           <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" />
           <span>Blood Tests</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.3s;">
+        <div class="source-item">
           <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" />
           <span>Air, Mould &amp; Pollen</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.35s;">
+        <div class="source-item">
           <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" />
           <span>Tap Water Quality</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.4s;">
+        <div class="source-item">
           <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" />
           <span>Nutrition</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.45s;">
+        <div class="source-item">
           <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" />
           <span>DEXA Scans</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.5s;">
+        <div class="source-item">
           <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" />
           <span>Body Composition</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.55s;">
+        <div class="source-item">
           <img src="./Icons/Fitness-Icon.svg" alt="Exercise" />
           <span>Exercise</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.6s;">
+        <div class="source-item">
           <img src="./Icons/Heart-Icon.svg" alt="Heart Health" />
           <span>Heart Health</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.65s;">
+        <div class="source-item">
           <img src="./Icons/Environment-Icon.svg" alt="Environment" />
           <span>Environment</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.7s;">
+        <div class="source-item">
           <img src="./Icons/BloodSugar-Icon.svg" alt="Blood Sugar" />
           <span>Blood Sugar</span>
         </div>
-        <div class="source-item fade-in" style="transition-delay: 0.75s;">
+        <div class="source-item">
           <img src="./Icons/Peptides-Icon.svg" alt="Peptides" />
           <span>Peptides</span>
         </div>
@@ -731,7 +724,7 @@
     </div>
 
     <!-- Advice Showcase -->
-    <div class="advice-section fade-in">
+    <div class="advice-section">
       <div class="advice-section-label">What the engine delivers</div>
       <div class="advice-carousel" id="adviceCarousel">
 
@@ -771,7 +764,7 @@
     </div>
 
     <!-- Bottom CTA -->
-    <div class="bottom-cta fade-in">
+    <div class="bottom-cta">
       <div class="bottom-cta-label">Get early access</div>
       <form class="email-form" id="earlyAccessFormBottom" onsubmit="return handleSubmitBottom(event)">
         <input
@@ -793,11 +786,16 @@
     <!-- Footer -->
     <footer class="footer">
       <div class="footer-links">
-        <a href="{{PRIVACY_POLICY_URL}}">Privacy Policy</a>
+        <a href="/privacy.html">Privacy Policy</a>
         <span>|</span>
         <a href="{{TERMS_URL}}">Terms &amp; Conditions</a>
         <span>|</span>
         <a href="/disclaimer.html">Medical Disclaimer</a>
+      </div>
+      <div class="footer-links footer-links-secondary">
+        <a href="{{DO_NOT_SELL_URL}}">Do Not Sell or Share My Personal Information</a>
+        <span>|</span>
+        <a href="/consumer-health-data.html">Consumer Health Data Privacy Policy</a>
       </div>
       <div class="footer-disclaimer">
         QuantumOne provides data-driven insights and suggestions for informational purposes only.
@@ -887,24 +885,11 @@
       }, 4750);
     }
 
-    // ── Scroll fade-in with Intersection Observer ──
-    const fadeEls = document.querySelectorAll('.fade-in');
-    const fadeObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          fadeObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15 });
-
-    fadeEls.forEach(el => fadeObserver.observe(el));
-
-    // ── 3D tilt on card ──
-    const card = document.getElementById('tiltCard');
-    if (card) {
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
+    // ── 3D tilt ──
+    function applyTilt(el, defaultShadow, shadowEnabled) {
+      if (!el) return;
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
@@ -912,15 +897,31 @@
         const rotateX = (y - centerY) / centerY * -2;
         const rotateY = (x - centerX) / centerX * 2;
 
-        card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        card.style.boxShadow = `${-rotateY * 1.5}px ${rotateX * 1.5}px 40px rgba(100, 40, 200, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3)`;
+        el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        if (shadowEnabled) {
+          el.style.boxShadow = `${-rotateY * 1.5}px ${rotateX * 1.5}px 40px rgba(100, 40, 200, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3)`;
+        }
       });
 
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
-        card.style.boxShadow = '0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3)';
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
+        if (shadowEnabled) {
+          el.style.boxShadow = defaultShadow;
+        }
       });
     }
+
+    applyTilt(
+      document.getElementById('tiltCard'),
+      '0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3)',
+      true
+    );
+
+    applyTilt(
+      document.getElementById('adviceCarousel'),
+      '',
+      false
+    );
 
     // ── Custom cursor ──
     const cursor = document.getElementById('cursorGlow');
