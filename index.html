@@ -75,9 +75,19 @@
       pointer-events: none;
       z-index: 0;
       background:
-        radial-gradient(ellipse at 50% 20%, rgba(120, 50, 220, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 60%, rgba(192, 38, 211, 0.06) 0%, transparent 40%),
-        radial-gradient(ellipse at 20% 80%, rgba(109, 40, 217, 0.05) 0%, transparent 40%);
+        radial-gradient(ellipse at 50% 20%, rgba(120, 50, 220, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 60%, rgba(192, 38, 211, 0.04) 0%, transparent 40%),
+        radial-gradient(ellipse at 20% 80%, rgba(109, 40, 217, 0.03) 0%, transparent 40%);
+      background-size: 200% 200%;
+      animation: meshDrift 25s ease-in-out infinite;
+    }
+
+    @keyframes meshDrift {
+      0% { background-position: 0% 0%; }
+      25% { background-position: 100% 50%; }
+      50% { background-position: 50% 100%; }
+      75% { background-position: 0% 50%; }
+      100% { background-position: 0% 0%; }
     }
 
     /* ── Main container ── */
@@ -286,7 +296,7 @@
     .sources-section {
       width: 100%;
       max-width: 600px;
-      margin-bottom: 56px;
+      margin-bottom: 44px;
       text-align: center;
       position: relative;
     }
@@ -355,7 +365,7 @@
       border-top-color: var(--border-glow-top);
       box-shadow: 0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3);
       padding: 36px 32px;
-      margin-bottom: 72px;
+      margin-bottom: 80px;
     }
 
     .card-label {
@@ -431,6 +441,118 @@
       text-align: center;
       padding: 14px 0;
       display: none;
+    }
+
+    /* ── Advice showcase ── */
+    .advice-section {
+      width: 100%;
+      max-width: 580px;
+      text-align: center;
+      margin-top: 56px;
+    }
+
+    .advice-section-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #7d7896;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .advice-carousel {
+      position: relative;
+      min-height: 220px;
+    }
+
+    .advice-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 2px;
+      border-radius: 18px;
+      background: linear-gradient(23.58deg, #5539C6 0%, rgba(0, 0, 0, 0) 52%, #B936CE 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: -5px 5px 16px rgba(85, 57, 198, 0.15), 5px -5px 16px rgba(185, 54, 206, 0.1);
+    }
+
+    .advice-card.active {
+      opacity: 1;
+      position: relative;
+      transition: opacity 0.8s ease;
+    }
+
+    .advice-card-inner {
+      background: linear-gradient(165deg, rgba(30, 24, 52, 0.98), rgba(14, 11, 26, 0.99));
+      border-radius: 16px;
+      padding: 36px 36px;
+    }
+
+    .advice-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .advice-body {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .advice-sources {
+      font-size: 11px;
+      color: #5a5475;
+      line-height: 1.5;
+    }
+
+    .advice-sources span {
+      color: #6b6480;
+    }
+
+    @media (max-width: 520px) {
+      .advice-card-inner {
+        padding: 26px 22px;
+      }
+    }
+
+    /* ── Bottom CTA ── */
+    .bottom-cta {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      margin-top: 64px;
+    }
+
+    .bottom-cta-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #7d7896;
+      margin-bottom: 16px;
+    }
+
+    .bottom-cta .email-form {
+      gap: 8px;
+    }
+
+    .submit-btn-sm {
+      padding: 12px 20px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 520px) {
+      .bottom-cta .email-form {
+        flex-direction: column;
+      }
+
+      .bottom-cta .submit-btn {
+        width: 100%;
+        padding: 14px 20px;
+      }
     }
 
     /* ── Footer ── */
@@ -597,6 +719,74 @@
           <img src="./Icons/Environment-Icon.svg" alt="Environment" />
           <span>Environment</span>
         </div>
+        <div class="source-item fade-in" style="transition-delay: 0.7s;">
+          <img src="./Icons/BloodSugar-Icon.svg" alt="Blood Sugar" />
+          <span>Blood Sugar</span>
+        </div>
+        <div class="source-item fade-in" style="transition-delay: 0.75s;">
+          <img src="./Icons/Peptides-Icon.svg" alt="Peptides" />
+          <span>Peptides</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advice Showcase -->
+    <div class="advice-section fade-in">
+      <div class="advice-section-label">What the engine delivers</div>
+      <div class="advice-carousel" id="adviceCarousel">
+
+        <div class="advice-card active">
+          <div class="advice-card-inner">
+            <div class="advice-title">Increase Vitamin D intake</div>
+            <div class="advice-body">Your genetics show a higher Vitamin D requirement. Combined with low solar exposure this month, declining sleep scores, and reduced HRV — supplementing 4,000 IU daily is projected to improve sleep quality by 18% and energy output by 12% within 3 weeks.</div>
+            <div class="advice-sources"><span>Sources:</span> Genetics · Blood Tests · Sleep · Environment · Heart Health</div>
+          </div>
+        </div>
+
+        <div class="advice-card">
+          <div class="advice-card-inner">
+            <div class="advice-title">Reduce gluten intake</div>
+            <div class="advice-body">Since increasing gluten 3 weeks ago, your sleep quality dropped 14%, HRV fell 9%, and exercise recovery slowed by 11%. Air quality and pollen are ruled out — the correlation points to diet. Reducing gluten is projected to reverse these within 10 days.</div>
+            <div class="advice-sources"><span>Sources:</span> Nutrition · Sleep · Heart Health · Exercise · Air, Mould &amp; Pollen</div>
+          </div>
+        </div>
+
+        <div class="advice-card">
+          <div class="advice-card-inner">
+            <div class="advice-title">Your L-Theanine stack is working</div>
+            <div class="advice-body">Since adding 200mg L-Theanine to your morning stack 12 days ago, deep sleep increased 22%, resting heart rate dropped 4 bpm, and your DEXA shows a 0.3% reduction in visceral fat. No negative interactions detected with your other supplements.</div>
+            <div class="advice-sources"><span>Sources:</span> Nootropics &amp; Supps · Sleep · Heart Health · DEXA Scans · Body Composition</div>
+          </div>
+        </div>
+
+        <div class="advice-card">
+          <div class="advice-card-inner">
+            <div class="advice-title">Move your bedtime 30 mins earlier</div>
+            <div class="advice-body">On nights you slept before 10:30pm, your blood glucose was 8% more stable, next-day step count increased 19%, and tap water contaminant sensitivity decreased. Your biohack of evening cold exposure amplifies this — combined impact is projected at 24% better recovery.</div>
+            <div class="advice-sources"><span>Sources:</span> Sleep · Biohacks · Blood Tests · Exercise · Tap Water Quality · Body Composition</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="bottom-cta fade-in">
+      <div class="bottom-cta-label">Get early access</div>
+      <form class="email-form" id="earlyAccessFormBottom" onsubmit="return handleSubmitBottom(event)">
+        <input
+          type="email"
+          class="email-input"
+          id="emailInputBottom"
+          placeholder="Your email"
+          required
+          autocomplete="email"
+          aria-label="Email address for early access"
+        />
+        <button type="submit" class="submit-btn submit-btn-sm">Notify me</button>
+      </form>
+      <div class="form-success" id="formSuccessBottom">
+        You're on the list. We'll be in touch.
       </div>
     </div>
 
@@ -651,6 +841,32 @@
 
       form.style.display = 'none';
       note.style.display = 'none';
+      success.style.display = 'block';
+    }
+
+    function handleSubmitBottom(e) {
+      e.preventDefault();
+
+      const email = document.getElementById('emailInputBottom').value;
+      const form = document.getElementById('earlyAccessFormBottom');
+      const success = document.getElementById('formSuccessBottom');
+
+      const googleForm = document.createElement('form');
+      googleForm.method = 'POST';
+      googleForm.action = 'https://docs.google.com/forms/d/e/1FAIpQLScdKzTfV8XFIxG9m-l0yO79t5o8TIbCy0ysPtKJQ6DGiGuRGw/formResponse';
+      googleForm.target = 'google-form-target';
+      googleForm.style.display = 'none';
+
+      const input = document.createElement('input');
+      input.name = 'entry.1125282240';
+      input.value = email;
+      googleForm.appendChild(input);
+
+      document.body.appendChild(googleForm);
+      googleForm.submit();
+      document.body.removeChild(googleForm);
+
+      form.style.display = 'none';
       success.style.display = 'block';
     }
 
@@ -886,6 +1102,18 @@
         }
       }, { threshold: 0.1 });
       connObserver.observe(sourcesSection);
+    }
+
+    // ── Advice carousel ──
+    const adviceCards = document.querySelectorAll('.advice-card');
+    if (adviceCards.length > 0) {
+      let currentCard = 0;
+
+      setInterval(() => {
+        adviceCards[currentCard].classList.remove('active');
+        currentCard = (currentCard + 1) % adviceCards.length;
+        adviceCards[currentCard].classList.add('active');
+      }, 9000);
     }
   </script>
 
