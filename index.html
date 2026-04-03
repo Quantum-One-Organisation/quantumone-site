@@ -41,6 +41,13 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
 
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@quantumone_" />
+  <meta name="twitter:title" content="QuantumOne — Personal Optimisation Engine" />
+  <meta name="twitter:description" content="The shortest path to self-optimisation. Your data. Your edge." />
+  <meta name="twitter:image" content="https://www.quantumone.app/Logo/OG-image.webp" />
+
   <!-- Google Fonts (non-blocking, swap on load) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -789,6 +796,43 @@
         "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js"
       }
     }
+  </script>
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "QuantumOne",
+        "url": "https://www.quantumone.app",
+        "logo": "https://www.quantumone.app/Logo/Combo_Wordmark.svg",
+        "sameAs": [
+          "https://x.com/quantumone_"
+        ],
+        "description": "Personal Optimisation Engine. Receive precise actions and expected impacts."
+      },
+      {
+        "@type": "WebSite",
+        "name": "QuantumOne",
+        "url": "https://www.quantumone.app"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "QuantumOne",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "iOS, Android",
+        "description": "The world's first Personal Optimisation Engine. The engine uncovers interactions between bio-data to uncover evidence-based advice.",
+        "offers": {
+          "@type": "Offer",
+          "price": "19.00",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/PreOrder"
+        }
+      }
+    ]
+  }
   </script>
 </head>
 <body>
