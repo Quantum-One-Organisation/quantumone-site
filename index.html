@@ -1,36 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--
+  QuantumOne — Landing Page (index.html)
+  https://www.quantumone.app
+
+  ARCHITECTURE:
+  Single self-contained HTML file. All CSS inline, all JS inline.
+  Only external dependency: Three.js v0.183 via CDN importmap.
+  Monolithic structure is intentional — one HTTP request for the critical path.
+  Do NOT split into external CSS/JS files.
+
+  ANIMATION SYSTEM:
+  One requestAnimationFrame loop (Geolines) drives everything:
+  - Three.js particle scene (GPU shaders)
+  - Connection lines canvas (via window._drawConnectionLines)
+  Do NOT add separate rAF loops.
+
+  PERFORMANCE RULES:
+  - No filter: drop-shadow on animated/composited elements (use text-shadow/box-shadow)
+  - No em dashes in content copy (brand separator "QuantumOne —" only)
+  - Mouse listeners must be { passive: true }
+  - getBoundingClientRect cached, never called per-frame
+  - All CSS animations use GPU-composited properties (transform, opacity)
+
+  FONTS: DM Sans only (5 weights: 300-700, non-blocking load). Telegraf removed.
+  FAVICONS: 32x32 PNG + apple-touch-icon only. .ico and 16x16 removed.
+-->
+<html lang="en" style="background:#06040d">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QuantumOne — Personal Optimisation Engine</title>
-  <meta name="description" content="The shortest path to self-optimisation. QuantumOne turns your health data into clear, actionable advice — automatically." />
+  <meta name="description" content="The shortest path to self-optimisation. QuantumOne turns your health data into clear, actionable advice, automatically." />
   <meta name="color-scheme" content="dark" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="QuantumOne — Personal Optimisation Engine" />
   <meta property="og:description" content="The shortest path to self-optimisation. Your data. Your edge." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://quantumone.app" />
+  <meta property="og:url" content="https://www.quantumone.app/" />
+  <meta property="og:image" content="https://www.quantumone.app/Logo/OG-image.webp" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Google Fonts (non-blocking, swap on load) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" /></noscript>
+
+  <!-- Preload critical external module -->
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.quantumone.app/" />
 
   <!-- Favicons -->
-  <link rel="icon" type="image/x-icon" href="./Logo/Favicon/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="./Logo/Favicon/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="./Logo/Favicon/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="./Logo/Favicon/apple-touch-icon.png" />
   <link rel="manifest" href="./Logo/Favicon/site.webmanifest" />
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
-
-    @font-face {
-      font-family: 'Telegraf';
-      src: url('./Fonts/Telegraf-Regular.ttf') format('truetype');
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-
     *, *::before, *::after {
       margin: 0;
       padding: 0;
@@ -65,29 +94,42 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ── Ambient background glow ── */
+    /* ── Ambient background glow ──
+       Oversized (142vw×142vh) to cover viewport during translate3d drift.
+       Uses transform animation (GPU-composited) not background-position.
+       Two radial gradients only — third (0.03 opacity) removed as invisible. */
     .ambient-glow {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: -21vh;
+      left: -21vw;
+      width: 142vw;
+      height: 142vh;
       pointer-events: none;
       z-index: 0;
+      will-change: transform;
       background:
         radial-gradient(ellipse at 50% 20%, rgba(120, 50, 220, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 60%, rgba(192, 38, 211, 0.04) 0%, transparent 40%),
-        radial-gradient(ellipse at 20% 80%, rgba(109, 40, 217, 0.03) 0%, transparent 40%);
-      background-size: 200% 200%;
+        radial-gradient(ellipse at 80% 60%, rgba(192, 38, 211, 0.05) 0%, transparent 40%);
       animation: meshDrift 25s ease-in-out infinite;
     }
 
+    /* ── Submit button pulse ── */
+    @keyframes submitPulse {
+      0% { opacity: 1; box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3); }
+      50% { opacity: 0.7; box-shadow: 0 0 36px rgba(147, 51, 234, 0.6), 0 0 60px rgba(192, 38, 211, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3); }
+      100% { opacity: 1; box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3); }
+    }
+
+    .submit-btn.pulsing {
+      animation: submitPulse 0.4s ease;
+    }
+
     @keyframes meshDrift {
-      0% { background-position: 0% 0%; }
-      25% { background-position: 100% 50%; }
-      50% { background-position: 50% 100%; }
-      75% { background-position: 0% 50%; }
-      100% { background-position: 0% 0%; }
+      0%   { transform: translate3d(0, 0, 0); }
+      25%  { transform: translate3d(-20vw, -10vh, 0); }
+      50%  { transform: translate3d(-10vw, -20vh, 0); }
+      75%  { transform: translate3d(7vw, -10vh, 0); }
+      100% { transform: translate3d(0, 0, 0); }
     }
 
     /* ── Main container ── */
@@ -118,24 +160,6 @@
       animation: logoPulse 6s ease-in-out infinite;
     }
 
-    /* Fallback text logo if image hasn't been set yet */
-    .logo-text {
-      font-family: 'Telegraf', Georgia, 'Times New Roman', serif;
-      font-size: 46px;
-      font-weight: 400;
-      font-style: normal;
-      color: #ffffff;
-      letter-spacing: 1px;
-    }
-
-    .logo-tagline {
-      font-size: 10px;
-      color: var(--text-secondary);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-top: 8px;
-    }
-
     /* ── Accent line ── */
     .accent-line {
       width: 300px;
@@ -147,26 +171,29 @@
     }
 
     @keyframes accentPulse {
-      0%, 100% { opacity: 0.4; box-shadow: 0 0 4px rgba(147, 51, 234, 0.08); }
-      50% { opacity: 0.7; box-shadow: 0 0 12px rgba(147, 51, 234, 0.2), 0 0 24px rgba(192, 38, 211, 0.08); }
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.7; }
     }
 
-    /* ── Logo pulse ── */
+    /* ── Logo pulse — uses opacity (GPU-composited), NOT filter: drop-shadow ── */
     @keyframes logoPulse {
-      0%, 100% { filter: drop-shadow(0 0 0px transparent); }
-      50% { filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.12)); }
+      0%, 100% { opacity: 0.88; }
+      50% { opacity: 1; }
     }
 
-    /* ── Custom cursor ── */
+    /* ── Custom cursor — positioned via translate3d (GPU), hidden on touch.
+       No .hovering class (was dead code — removed). ── */
     .cursor-glow {
       position: fixed;
+      top: 0;
+      left: 0;
       width: 200px;
       height: 200px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(147, 51, 234, 0.01) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(147, 51, 234, 0.02) 0%, transparent 70%);
       pointer-events: none;
       z-index: 9999;
-      transform: translate(-50%, -50%);
+      will-change: transform;
       opacity: 0;
     }
 
@@ -174,17 +201,12 @@
       opacity: 1;
     }
 
-    .cursor-glow.hovering {
-      width: 200px;
-      height: 200px;
-    }
-
-    /* ── Card tilt ── */
+    /* ── Card tilt — transform only (no box-shadow). Rect cached on mouseenter. ── */
     .card {
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.15s ease;
     }
 
-    /* ── Connection lines canvas ── */
+    /* ── Connection lines canvas — drawn by Geolines rAF loop, not its own ── */
     .connection-canvas {
       position: absolute;
       top: 0;
@@ -212,16 +234,19 @@
       .cursor-glow { display: none; }
     }
 
-    /* ── Headline ── */
+    /* ── Headline — text-shadow ensures readability over Geolines background.
+       Uses text-shadow NOT filter: drop-shadow (avoids compositing cost on
+       background-clip: text elements). ── */
     .headline {
       font-size: 32px;
       font-weight: 300;
       color: var(--text-primary);
       text-align: center;
       line-height: 1.3;
-      margin-bottom: 42px;
+      margin-bottom: 78px;
       letter-spacing: -0.3px;
       white-space: nowrap;
+      text-shadow: 0 0 50px rgba(6, 4, 13, 1.0), 0 0 80px rgba(6, 4, 13, 0.9);
     }
 
     .headline em {
@@ -230,21 +255,22 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      text-shadow: 0 0 50px rgba(6, 4, 13, 1.0);
     }
 
     .headline .hero-gradient {
-      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
     .mobile-break {
       display: none;
     }
 
-    /* ── Rotating word ── */
+    /* ── Rotating word — no width transition (layout-triggering).
+       Opacity crossfade handles the visual smoothness. ── */
     .rotating-word {
       display: inline-block;
       position: relative;
-      transition: width 0.8s ease;
       vertical-align: baseline;
     }
 
@@ -273,14 +299,18 @@
       line-height: 1.7;
       margin-bottom: 48px;
       max-width: 560px;
+      text-shadow: 0 0 50px rgba(6, 4, 13, 1.0), 0 0 80px rgba(6, 4, 13, 0.9);
     }
 
     .subtext-lead {
       color: #c8c2d8;
       font-weight: 500;
+      font-size: 18px;
     }
 
-    /* ── Data Sources ── */
+    /* ── Data Sources — ::before provides dark radial backdrop for readability
+       over Geolines. All 15 icon <img> tags use loading="lazy". Icon centers
+       cached on resize (not recalculated per trace spawn). ── */
     .sources-section {
       width: 100%;
       max-width: 600px;
@@ -289,12 +319,28 @@
       position: relative;
     }
 
+    .sources-section::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 140%;
+      height: 130%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(ellipse at 50% 50%, rgba(8, 6, 15, 0.5) 0%, rgba(8, 6, 15, 0.25) 40%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
     .sources-label {
       font-size: 19px;
       font-weight: 500;
       color: #b8b2cc;
       letter-spacing: 0.3px;
       margin-bottom: 36px;
+      text-shadow: 0 0 50px rgba(6, 4, 13, 1.0), 0 0 80px rgba(6, 4, 13, 0.9);
+      position: relative;
+      z-index: 1;
     }
 
     .sources-grid {
@@ -330,6 +376,7 @@
       color: #7d7896;
       line-height: 1.3;
       transition: color 0.2s ease;
+      text-shadow: 0 0 30px rgba(6, 4, 13, 1.0), 0 0 60px rgba(6, 4, 13, 0.93);
     }
 
     .source-item:hover span {
@@ -343,17 +390,20 @@
       }
     }
 
-    /* ── Card ── */
+    /* ── Card — glassmorphism + faint purple/pink radial gradient texture ── */
     .card {
       width: 100%;
       max-width: 520px;
-      background: linear-gradient(165deg, rgba(30, 24, 52, 0.95), rgba(18, 14, 32, 0.98));
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(147, 51, 234, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, rgba(192, 38, 211, 0.04) 0%, transparent 50%),
+        linear-gradient(165deg, rgba(30, 24, 52, 0.95), rgba(18, 14, 32, 0.98));
       border-radius: 18px;
       border: 1px solid var(--border-glow);
       border-top-color: var(--border-glow-top);
       box-shadow: 0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3);
       padding: 36px 32px;
-      margin-bottom: 80px;
+      margin-bottom: 100px;
     }
 
     .card-label {
@@ -375,7 +425,7 @@
       flex: 1;
       padding: 14px 18px;
       background: rgba(10, 8, 18, 0.6);
-      border: 1px solid rgba(120, 60, 220, 0.15);
+      border: 1px solid rgba(120, 60, 220, 0.25);
       border-radius: 10px;
       color: var(--text-primary);
       font-family: 'DM Sans', sans-serif;
@@ -404,7 +454,7 @@
       cursor: pointer;
       white-space: nowrap;
       box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
-      transition: box-shadow 0.2s ease, transform 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .submit-btn:hover {
@@ -414,6 +464,12 @@
 
     .submit-btn:active {
       transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
     }
 
     .form-note {
@@ -429,6 +485,38 @@
       text-align: center;
       padding: 14px 0;
       display: none;
+    }
+
+    .form-success.visible {
+      display: block;
+      animation: successFadeIn 0.6s ease;
+    }
+
+    @keyframes successFadeIn {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-check {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      border-radius: 50%;
+      background: var(--accent-yellow);
+      color: var(--bg-deep);
+      margin-right: 8px;
+      vertical-align: middle;
+      animation: checkPulse 0.6s ease;
+    }
+
+    @keyframes checkPulse {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.3); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
     }
 
     /* ── Advice showcase ── */
@@ -448,10 +536,12 @@
       margin-bottom: 28px;
     }
 
+    /* ── Advice carousel — all cards position: absolute to prevent layout shift.
+       min-height set to accommodate tallest card (card 4, bedtime). ── */
     .advice-carousel {
       position: relative;
-      min-height: 220px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      min-height: 260px;
+      transition: transform 0.15s ease;
     }
 
     .advice-card {
@@ -469,7 +559,6 @@
 
     .advice-card.active {
       opacity: 1;
-      position: relative;
       transition: opacity 0.8s ease;
     }
 
@@ -504,9 +593,73 @@
     }
 
     @media (max-width: 520px) {
+      .advice-carousel {
+        min-height: 320px;
+      }
+
       .advice-card-inner {
         padding: 26px 22px;
       }
+    }
+
+    /* ── Carousel dot indicators ── */
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .carousel-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .carousel-dot.active {
+      background: var(--accent-purple);
+      transform: scale(1.35);
+    }
+
+    .carousel-dot:hover {
+      background: var(--accent-pink);
+    }
+
+    .carousel-dot:focus-visible {
+      outline: 2px solid var(--accent-purple);
+      outline-offset: 3px;
+    }
+
+    /* ── Social link ── */
+    .social-link {
+      text-align: center;
+      margin-top: 48px;
+    }
+
+    .social-link a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      transition: color 0.2s ease;
+    }
+
+    .social-link a:hover {
+      color: var(--text-secondary);
+    }
+
+    .social-link svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
     }
 
     /* ── Bottom CTA ── */
@@ -574,7 +727,7 @@
       font-size: 10px;
       color: var(--text-muted);
       line-height: 1.7;
-      max-width: 400px;
+      max-width: 600px;
       margin: 0 auto;
     }
 
@@ -607,6 +760,28 @@
       }
     }
   </style>
+
+  <!-- Geolines background animation -->
+  <style>
+    #geolines-canvas {
+      position: fixed;
+      top: 100px;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      touch-action: none;
+    }
+  </style>
+  <!-- Three.js importmap — core only, no addons (unused entry removed) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -623,12 +798,12 @@
     <div class="accent-line"></div>
 
     <!-- Headline -->
-    <h1 class="headline">The <em><span class="rotating-word" id="rotatingWord"><span class="active">fastest</span><span>modern</span><span>quickest</span><span>shortest</span></span></em> path to <span class="mobile-break"></span><em class="hero-gradient">self-optimisation</em>.</h1>
+    <h1 class="headline">The <em><span class="rotating-word" id="rotatingWord"><span class="active">quickest</span><span>simplest</span><span>sharpest</span><span>smartest</span><span>cleanest</span><span>shortest</span><span>clearest</span></span></em> path to <span class="mobile-break"></span><em class="hero-gradient">self-optimisation</em>.</h1>
 
     <!-- Subtext -->
     <p class="subtext">
       <span class="subtext-lead">The world's first Personal Optimisation Engine.</span><br/>
-      The engine uncovers complex interactions between your biohacks, genetics, blood, nootropics, and surroundings to uncover previously impossible insights. You receive precise actions to move you into continuous accelerated growth.
+      The engine uncovers complex interactions between your genetics, biohacks, blood, nootropics, and surroundings to uncover previously impossible insights. You receive precise actions and expected impacts.<br/><br/>Pure continuous accelerated growth.
     </p>
 
     <!-- Email capture card -->
@@ -645,11 +820,12 @@
           autocomplete="email"
           aria-label="Email address for early access"
         />
-        <button type="submit" class="submit-btn" id="submitBtn">Notify me</button>
+        <button type="submit" class="submit-btn" id="submitBtn">Reserve early access</button>
       </form>
 
       <div class="form-success" id="formSuccess">
-        You're on the list. We'll be in touch.
+        <span class="success-check">✓</span>
+        You're on the list.<br/>You'll be among the first when the Personal Optimisation Engine launches.
       </div>
 
       <div class="form-note" id="formNote">No spam. Just a launch notification.</div>
@@ -661,63 +837,63 @@
       <canvas class="connection-canvas" id="connectionCanvas"></canvas>
       <div class="sources-grid">
         <div class="source-item">
-          <img src="./Icons/DNA-Icon.svg" alt="Genetics" />
+          <img src="./Icons/DNA-Icon.svg" alt="Genetics" loading="lazy" />
           <span>Genetics</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" />
+          <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" loading="lazy" />
           <span>Nootropics &amp; Supps</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Sleep-Icon.svg" alt="Sleep" />
+          <img src="./Icons/Sleep-Icon.svg" alt="Sleep" loading="lazy" />
           <span>Sleep</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" />
+          <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" loading="lazy" />
           <span>Biohacks</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" />
+          <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" loading="lazy" />
           <span>Blood Tests</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" />
+          <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" loading="lazy" />
           <span>Air, Mould &amp; Pollen</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" />
+          <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" loading="lazy" />
           <span>Tap Water Quality</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" />
+          <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" loading="lazy" />
           <span>Nutrition</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" />
+          <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" loading="lazy" />
           <span>DEXA Scans</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" />
+          <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" loading="lazy" />
           <span>Body Composition</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Fitness-Icon.svg" alt="Exercise" />
+          <img src="./Icons/Fitness-Icon.svg" alt="Exercise" loading="lazy" />
           <span>Exercise</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Heart-Icon.svg" alt="Heart Health" />
+          <img src="./Icons/Heart-Icon.svg" alt="Heart Health" loading="lazy" />
           <span>Heart Health</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Environment-Icon.svg" alt="Environment" />
+          <img src="./Icons/Environment-Icon.svg" alt="Environment" loading="lazy" />
           <span>Environment</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/BloodSugar-Icon.svg" alt="Blood Sugar" />
+          <img src="./Icons/BloodSugar-Icon.svg" alt="Blood Sugar" loading="lazy" />
           <span>Blood Sugar</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Peptides-Icon.svg" alt="Peptides" />
+          <img src="./Icons/Peptides-Icon.svg" alt="Peptides" loading="lazy" />
           <span>Peptides</span>
         </div>
       </div>
@@ -731,7 +907,7 @@
         <div class="advice-card active">
           <div class="advice-card-inner">
             <div class="advice-title">Increase Vitamin D intake</div>
-            <div class="advice-body">Your genetics show a higher Vitamin D requirement. Combined with low solar exposure this month, declining sleep scores, and reduced HRV — supplementing 4,000 IU daily is projected to improve sleep quality by 18% and energy output by 12% within 3 weeks.</div>
+            <div class="advice-body">Your genetics show a higher Vitamin D requirement. Combined with low solar exposure this month, declining sleep scores, and reduced HRV, supplementing 4,000 IU daily is projected to improve sleep quality by 18% and energy output by 12% within 3 weeks.</div>
             <div class="advice-sources"><span>Sources:</span> Genetics · Blood Tests · Sleep · Environment · Heart Health</div>
           </div>
         </div>
@@ -739,7 +915,7 @@
         <div class="advice-card">
           <div class="advice-card-inner">
             <div class="advice-title">Reduce gluten intake</div>
-            <div class="advice-body">Since increasing gluten 3 weeks ago, your sleep quality dropped 14%, HRV fell 9%, and exercise recovery slowed by 11%. Air quality and pollen are ruled out — the correlation points to diet. Reducing gluten is projected to reverse these within 10 days.</div>
+            <div class="advice-body">Since increasing gluten 3 weeks ago, your sleep quality dropped 14%, HRV fell 9%, and exercise recovery slowed by 11%. Air quality and pollen are ruled out. The correlation points to diet. Reducing gluten is projected to reverse these within 10 days.</div>
             <div class="advice-sources"><span>Sources:</span> Nutrition · Sleep · Heart Health · Exercise · Air, Mould &amp; Pollen</div>
           </div>
         </div>
@@ -755,11 +931,17 @@
         <div class="advice-card">
           <div class="advice-card-inner">
             <div class="advice-title">Move your bedtime 30 mins earlier</div>
-            <div class="advice-body">On nights you slept before 10:30pm, your blood glucose was 8% more stable, next-day step count increased 19%, and tap water contaminant sensitivity decreased. Your biohack of evening cold exposure amplifies this — combined impact is projected at 24% better recovery.</div>
+            <div class="advice-body">On nights you slept before 10:30pm, your blood glucose was 8% more stable, next-day step count increased 19%, and tap water contaminant sensitivity decreased. Your biohack of evening cold exposure amplifies this, and the combined impact is projected at 24% better recovery.</div>
             <div class="advice-sources"><span>Sources:</span> Sleep · Biohacks · Blood Tests · Exercise · Tap Water Quality · Body Composition</div>
           </div>
         </div>
 
+      </div>
+      <div class="carousel-dots" id="carouselDots">
+        <button class="carousel-dot active" aria-label="Advice 1"></button>
+        <button class="carousel-dot" aria-label="Advice 2"></button>
+        <button class="carousel-dot" aria-label="Advice 3"></button>
+        <button class="carousel-dot" aria-label="Advice 4"></button>
       </div>
     </div>
 
@@ -776,11 +958,20 @@
           autocomplete="email"
           aria-label="Email address for early access"
         />
-        <button type="submit" class="submit-btn submit-btn-sm">Notify me</button>
+        <button type="submit" class="submit-btn submit-btn-sm" id="submitBtnBottom">Reserve early access</button>
       </form>
       <div class="form-success" id="formSuccessBottom">
-        You're on the list. We'll be in touch.
+        <span class="success-check">✓</span>
+        You're on the list.<br/>You'll be among the first when the Personal Optimisation Engine launches.
       </div>
+    </div>
+
+    <!-- Social -->
+    <div class="social-link">
+      <a href="https://x.com/quantumone_" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        Follow us on X
+      </a>
     </div>
 
     <!-- Footer -->
@@ -813,16 +1004,641 @@
   <!-- Hidden iframe for Google Form submission -->
   <iframe name="google-form-target" id="googleFormTarget" style="display:none;"></iframe>
 
+  <!-- Geolines V1 — Background particle animation -->
+    <script type="module">
+    import * as THREE from 'three';
+
+    const DEBUG = false;
+
+    // ========================================
+    // CENTRAL CONFIG — single source of truth
+    // ========================================
+    const CONFIG = {
+        // Wave shape
+        baseFrequency:     0.8,
+        amplitudePeriod:   13,
+        yTilt:             2,
+        zTilt:             1,
+        baseSize:          0.08,
+        sizeVariation:     0.05,
+        startSpreadFactor: 1.0,
+        offsetStep:        0.17,
+
+        // Particles
+        particleCount:     120,
+        numLines:          30,
+        speed:             0.05,
+
+        // Fade
+        fadeInDist:        0.1,
+        fadeOutDist:       0.01,
+
+        // Chaos scatter
+        chaosThreshold:    0.45,
+        chaosStrength:     2.0,
+        zChaosDamping:     0.01,
+
+        // Gradient
+        gradientPositions: [0.29, 0.37, 0.6, 0.85, 1.0],
+        gradientColors:    ['#C7C7C7', '#816DD5', '#B936CE', '#5539C6', '#5539C6'],
+
+        // Camera
+        cameraFov:         75,
+        cameraNear:        0.1,
+        cameraFar:         1000,
+        cameraZ:           15,
+
+        // Safety
+        maxDelta:          0.1,
+        TIME_WRAP:         3200.0 * Math.PI,
+        maxPixelRatio:     2,
+
+        // Resize
+        resizeDebounceMs:  100,
+
+        // Bounds padding
+        entryPadding:      0.7,
+        exitPadding:       0.1,
+
+        // Mouse interaction
+        mouseRadius:       2.5,
+        mouseStrength:     0.5,
+        mouseFadeSpeed:    5.0,
+        mouseBrighten:     0.25,
+        mouseSizeBoost:    0.12,
+        mouseWakeSpeed:    4.8,
+        mouseWakeBright:   0.75,
+        mouseRippleStrength: 0.75,   // vertical displacement amplitude (subtle)
+        mouseRippleFreq:     1.5,    // spatial frequency (wide soft undulations)
+        mouseRippleSpeed:    3.0,    // ring propagation speed
+        mouseRippleRadius:   2.5,    // max distance ripple is visible
+    };
+
+    // Derived constants
+    const amplitudeSpeed = 4.0 * Math.PI / CONFIG.amplitudePeriod;
+    const yOffset        = -CONFIG.yTilt / 2;
+    const totalParticles = CONFIG.numLines * CONFIG.particleCount;
+    const spacing        = 1.5 / (CONFIG.particleCount - 1);
+    const gradientColors = CONFIG.gradientColors.map(hex => new THREE.Color(hex));
+
+    // ========================================
+    // SCENE, CAMERA, RENDERER
+    // ========================================
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+        CONFIG.cameraFov,
+        window.innerWidth / window.innerHeight,
+        CONFIG.cameraNear,
+        CONFIG.cameraFar
+    );
+    camera.position.z = CONFIG.cameraZ;
+
+    let renderer;
+    try {
+        renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
+    } catch (e) {
+        if (DEBUG) console.error('WebGL init failed:', e);
+        throw e;
+    }
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
+    renderer.setClearColor(0x000000, 0);
+    renderer.domElement.id = 'geolines-canvas';
+    document.body.appendChild(renderer.domElement);
+
+    // G3: cached rect — avoids forced layout on every pointermove
+    let canvasRect = renderer.domElement.getBoundingClientRect();
+
+    // Context loss handling
+    function onContextLost(event) {
+        event.preventDefault();
+        if (animationId !== null) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    }
+    function onContextRestored() { animate(); }
+    renderer.domElement.addEventListener('webglcontextlost',     onContextLost);
+    renderer.domElement.addEventListener('webglcontextrestored', onContextRestored);
+
+    const timer = new THREE.Timer();
+    timer.connect(document);
+    let totalTime   = 0.0;
+    let animationId = null;
+
+    // ========================================
+    // BOUNDS
+    // ========================================
+    let startX, endX;
+    function updateBounds() {
+        const vfovRad    = camera.fov * Math.PI / 180;
+        const dist       = camera.position.z;
+        const halfHeight = dist * Math.tan(vfovRad / 2);
+        const halfWidth  = halfHeight * camera.aspect;
+        startX = -(halfWidth + CONFIG.entryPadding);
+        endX   =   halfWidth + CONFIG.exitPadding;
+    }
+    updateBounds();
+
+    // ========================================
+    // GEOMETRY — PACKED ATTRIBUTES
+    // ========================================
+    const geometry = new THREE.BufferGeometry();
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(
+        new Float32Array(totalParticles * 3), 3
+    ));
+
+    let tArr          = new Float32Array(totalParticles);
+    let randomArr     = new Float32Array(totalParticles * 3);
+    let lineParamsArr = new Float32Array(totalParticles * 4);
+    let freqOffsetArr = new Float32Array(totalParticles);
+
+    for (let lineIndex = 0; lineIndex < CONFIG.numLines; lineIndex++) {
+        const lo = (lineIndex - (CONFIG.numLines - 1) / 2) * CONFIG.offsetStep;
+        const ha = 4.0 + Math.abs(lo) * 0.2;
+        const la = 1.0 + Math.abs(lo) * 0.1;
+        const po = lineIndex * 0.15;
+        const fo = lineIndex * 0.01;
+
+        for (let i = 0; i < CONFIG.particleCount; i++) {
+            const idx = lineIndex * CONFIG.particleCount + i;
+            tArr[idx] = i * spacing;
+            randomArr[idx * 3]     = (Math.random() - 0.5) * CONFIG.chaosStrength;
+            randomArr[idx * 3 + 1] = (Math.random() - 0.5) * CONFIG.chaosStrength;
+            randomArr[idx * 3 + 2] = (Math.random() - 0.5) * CONFIG.chaosStrength;
+            lineParamsArr[idx * 4]     = lo;
+            lineParamsArr[idx * 4 + 1] = ha;
+            lineParamsArr[idx * 4 + 2] = la;
+            lineParamsArr[idx * 4 + 3] = po;
+            freqOffsetArr[idx] = fo;
+        }
+    }
+
+    geometry.setAttribute('aT',          new THREE.BufferAttribute(tArr, 1));
+    geometry.setAttribute('aRandom',     new THREE.BufferAttribute(randomArr, 3));
+    geometry.setAttribute('aLineParams', new THREE.BufferAttribute(lineParamsArr, 4));
+    geometry.setAttribute('aFreqOffset', new THREE.BufferAttribute(freqOffsetArr, 1));
+
+    // ========================================
+    // VERTEX SHADER
+    // ========================================
+    const vertexShader = `
+        attribute highp float aT;
+        attribute vec3  aRandom;
+        attribute vec4  aLineParams;
+        attribute float aFreqOffset;
+
+        uniform float totalTime;
+        uniform float startX;
+        uniform float endX;
+        uniform float uBaseFrequency;
+        uniform float uAmplitudeSpeed;
+        uniform float uYTilt;
+        uniform float uYOffset;
+        uniform float uZTilt;
+        uniform float uBaseSize;
+        uniform float uSizeVariation;
+        uniform float uStartSpreadFactor;
+        uniform float uFadeInDist;
+        uniform float uFadeOutDist;
+        uniform float uChaosThreshold;
+        uniform float uZChaosDamping;
+        uniform vec3  uGradientColors[5];
+        uniform float uGradientPositions[5];
+        uniform vec2  uMouseWorld;
+        uniform float uMouseActive;
+        uniform float uMouseRadius;
+        uniform float uMouseStrength;
+        uniform float uMouseBrighten;
+        uniform float uMouseSizeBoost;
+        uniform vec2  uMouseTrail1;
+        uniform vec2  uMouseTrail2;
+        uniform vec2  uMouseTrail3;
+        uniform float uMouseWakeBright;
+        uniform float uMouseRippleStrength;
+        uniform float uMouseRippleFreq;
+        uniform float uMouseRippleSpeed;
+        uniform float uMouseRippleRadius;
+        uniform highp float uTimeOffset;
+
+        varying vec3  vColor;
+        varying float vAlpha;
+
+        vec3 mod289_v3(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289_v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x)   { return mod289_v3((x * 34.0 + 1.0) * x); }
+
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy));
+            vec2 x0 = v - i + dot(i, C.xx);
+            vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289_v2(i);
+            vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+            vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+            m = m * m; m = m * m;
+            vec3 xg = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h  = abs(xg) - 0.5;
+            vec3 ox = floor(xg + 0.5);
+            vec3 a0 = xg - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+            vec3 g;
+            g.x  = a0.x * x0.x   + h.x * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            highp float t = aT + uTimeOffset;
+            float clampedT = clamp(t, 0.0, 1.0);
+
+            float aLineOffset  = aLineParams.x;
+            float aHighAmp     = aLineParams.y;
+            float aLowAmp      = aLineParams.z;
+            float aPhaseOffset = aLineParams.w;
+
+            float amplitude = aLowAmp + (aHighAmp - aLowAmp)
+                * (0.5 + 0.5 * sin(totalTime * uAmplitudeSpeed + aPhaseOffset));
+            float freq = uBaseFrequency + aFreqOffset;
+            float x = startX + t * (endX - startX);
+
+            const float PI     = 3.14159265;
+            const float TWO_PI = 6.28318530;
+            float spread = 1.5 * sin(PI * t);
+            float wave = amplitude * (
+                sin(TWO_PI * freq * t)
+              + 0.5 * sin(4.0 * PI * freq * t)
+              + 0.25 * sin(6.0 * PI * freq * t)
+            );
+            wave *= sin(PI * t);
+
+            float y = wave
+                + aLineOffset * (spread * 0.8 + (1.0 - t) * uStartSpreadFactor)
+                + t * uYTilt + uYOffset;
+
+            float z = aLineOffset * spread * 1.3 * cos(PI * t + aPhaseOffset)
+                + t * uZTilt * 0.2
+                + sin(t * PI * 5.0 + aPhaseOffset) * 0.5;
+
+            if (t < uChaosThreshold) {
+                float chaosAmount = 1.0 - t / uChaosThreshold;
+                x += aRandom.x * chaosAmount;
+                y += aRandom.y * chaosAmount;
+                z += aRandom.z * chaosAmount * uZChaosDamping;
+                float noiseStrength = chaosAmount * 0.1;
+                y += snoise(vec2(t * 10.0, totalTime * 0.9 + aLineOffset)) * noiseStrength * 1.7;
+            }
+
+            vec3 particleColor = uGradientColors[0];
+            if (clampedT >= uGradientPositions[0]) {
+                for (int j = 0; j < 4; j++) {
+                    if (clampedT >= uGradientPositions[j] && clampedT <= uGradientPositions[j + 1]) {
+                        float factor = (clampedT - uGradientPositions[j])
+                                     / (uGradientPositions[j + 1] - uGradientPositions[j]);
+                        particleColor = mix(uGradientColors[j], uGradientColors[j + 1], factor);
+                        break;
+                    }
+                }
+            }
+
+            float alpha = clamp(t / uFadeInDist, 0.0, 1.0)
+                        * clamp((1.0 - t) / uFadeOutDist, 0.0, 1.0)
+                        * 0.475;
+
+            float sizeWave = abs(wave / max(amplitude, 0.001));
+            float particleSize = uBaseSize + uSizeVariation * sizeWave;
+
+            // Mouse interaction — guarded: uniform branch = zero divergence, skips entirely when inactive
+            if (uMouseActive > 0.001) {
+                vec2 toParticle = vec2(x, y) - uMouseWorld;
+                float mouseDist = max(length(toParticle), 0.001);
+                float mouseInfluence = (1.0 - smoothstep(0.0, uMouseRadius, mouseDist)) * uMouseActive;
+
+                float repulseInfluence = mouseInfluence * mouseInfluence;
+                vec2 pushDir = toParticle / mouseDist;
+                x += pushDir.x * repulseInfluence * uMouseStrength;
+                y += pushDir.y * repulseInfluence * uMouseStrength;
+
+                float wake1 = (1.0 - smoothstep(0.0, uMouseRadius * 1.3, length(vec2(x, y) - uMouseTrail1))) * uMouseActive;
+                float wake2 = (1.0 - smoothstep(0.0, uMouseRadius * 1.1, length(vec2(x, y) - uMouseTrail2))) * uMouseActive;
+                float wake3 = (1.0 - smoothstep(0.0, uMouseRadius * 0.9, length(vec2(x, y) - uMouseTrail3))) * uMouseActive;
+                float wakeInfluence = (wake1 * 0.55 + wake2 * 0.3 + wake3 * 0.15) * uMouseWakeBright;
+
+                float brighten = max(mouseInfluence * uMouseBrighten, wakeInfluence);
+                particleColor = mix(particleColor, vec3(1.0), brighten);
+                particleSize *= 1.0 + mouseInfluence * uMouseSizeBoost;
+                alpha = mix(alpha, 1.0, max(mouseInfluence, wakeInfluence));
+
+                // Ripple — soft trailing undulation from wake position
+                float rippleDist = length(vec2(x, y) - mix(uMouseTrail2, uMouseWorld, 0.3));
+                float rippleFade = 1.0 - smoothstep(0.0, uMouseRippleRadius, rippleDist);
+                float ripplePhase = rippleDist * uMouseRippleFreq - totalTime * uMouseRippleSpeed;
+                y += sin(ripplePhase) * rippleFade * uMouseRippleStrength;
+            }
+
+            vColor = particleColor;
+            vAlpha = alpha;
+            vec4 mvPosition = modelViewMatrix * vec4(x, y, z, 1.0);
+            gl_PointSize = particleSize * (300.0 / -mvPosition.z);
+            gl_Position  = projectionMatrix * mvPosition;
+        }
+    `;
+
+    // ========================================
+    // FRAGMENT SHADER
+    // ========================================
+    const fragmentShader = `
+        varying vec3  vColor;
+        varying float vAlpha;
+        void main() {
+            gl_FragColor = vec4(vColor, vAlpha);
+        }
+    `;
+
+    // ========================================
+    // MATERIAL
+    // ========================================
+    const material = new THREE.ShaderMaterial({
+        precision: 'mediump',
+        uniforms: {
+            totalTime:          { value: 0.0 },
+            startX:             { value: startX },
+            endX:               { value: endX },
+            uBaseFrequency:     { value: CONFIG.baseFrequency },
+            uAmplitudeSpeed:    { value: amplitudeSpeed },
+            uYTilt:             { value: CONFIG.yTilt },
+            uYOffset:           { value: yOffset },
+            uZTilt:             { value: CONFIG.zTilt },
+            uBaseSize:          { value: CONFIG.baseSize },
+            uSizeVariation:     { value: CONFIG.sizeVariation },
+            uStartSpreadFactor: { value: CONFIG.startSpreadFactor },
+            uFadeInDist:        { value: CONFIG.fadeInDist },
+            uFadeOutDist:       { value: CONFIG.fadeOutDist },
+            uChaosThreshold:    { value: CONFIG.chaosThreshold },
+            uZChaosDamping:     { value: CONFIG.zChaosDamping },
+            uGradientColors:    { value: gradientColors },
+            uGradientPositions: { value: CONFIG.gradientPositions },
+            uMouseWorld:        { value: new THREE.Vector2(-9999, -9999) },
+            uMouseActive:       { value: 0.0 },
+            uMouseRadius:       { value: CONFIG.mouseRadius },
+            uMouseStrength:     { value: CONFIG.mouseStrength },
+            uMouseBrighten:     { value: CONFIG.mouseBrighten },
+            uMouseSizeBoost:    { value: CONFIG.mouseSizeBoost },
+            uMouseTrail1:       { value: new THREE.Vector2(-9999, -9999) },
+            uMouseTrail2:       { value: new THREE.Vector2(-9999, -9999) },
+            uMouseTrail3:       { value: new THREE.Vector2(-9999, -9999) },
+            uMouseWakeBright:   { value: CONFIG.mouseWakeBright },
+            uMouseRippleStrength: { value: CONFIG.mouseRippleStrength },
+            uMouseRippleFreq:   { value: CONFIG.mouseRippleFreq },
+            uMouseRippleSpeed:  { value: CONFIG.mouseRippleSpeed },
+            uMouseRippleRadius: { value: CONFIG.mouseRippleRadius },
+            uTimeOffset:        { value: 0.0 }
+        },
+        vertexShader,
+        fragmentShader,
+        transparent: true,
+        blending:    THREE.NormalBlending,
+        depthTest:   false,
+        depthWrite:  false
+    });
+
+    // ========================================
+    // POINTS MESH
+    // ========================================
+    const particles = new THREE.Points(geometry, material);
+    particles.frustumCulled = false;
+    scene.add(particles);
+
+    // ========================================
+    // MOUSE INTERACTION
+    // ========================================
+    const _mouseProj = new THREE.Vector3();
+    let mouseNdcX         = 0;
+    let mouseNdcY         = 0;
+    let mouseOverCanvas   = false;
+    let mouseTargetActive = 0.0;
+    let mouseActive       = 0.0;
+    let trail1X = -9999, trail1Y = -9999;
+    let trail2X = -9999, trail2Y = -9999;
+    let trail3X = -9999, trail3Y = -9999;
+
+    function projectMouseToWorld() {
+        _mouseProj.set(mouseNdcX, mouseNdcY, 0.5).unproject(camera);
+        _mouseProj.sub(camera.position).normalize();
+        const d = _mouseProj.z;
+        if (Math.abs(d) < 0.0001) return;
+        const t = -camera.position.z / d;
+        material.uniforms.uMouseWorld.value.set(
+            camera.position.x + _mouseProj.x * t,
+            camera.position.y + _mouseProj.y * t
+        );
+    }
+
+    function onPointerMove(event) {
+        const px = event.clientX - canvasRect.left;
+        const py = event.clientY - canvasRect.top;
+        if (px >= 0 && px <= canvasRect.width && py >= 0 && py <= canvasRect.height) {
+            mouseNdcX = (px / canvasRect.width)  *  2.0 - 1.0;
+            mouseNdcY = (py / canvasRect.height) * -2.0 + 1.0;
+            mouseOverCanvas   = true;
+            mouseTargetActive = 1.0;
+        } else {
+            mouseOverCanvas   = false;
+            mouseTargetActive = 0.0;
+        }
+    }
+    function onPointerLeave() {
+        mouseOverCanvas   = false;
+        mouseTargetActive = 0.0;
+    }
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+
+    // ========================================
+    // CPU UPDATE — wrap detection + reset only.
+    // Linear t advancement handled by uTimeOffset
+    // uniform on GPU (eliminates per-frame buffer upload).
+    // ========================================
+    let overIndices = new Uint16Array(CONFIG.particleCount);
+    let overCount   = 0;
+    let timeOffset  = 0.0;
+
+    function update() {
+        const pc = CONFIG.particleCount;
+        const nl = CONFIG.numLines;
+        const cs = CONFIG.chaosStrength;
+        let anyReset = false;
+
+        for (let lineIndex = 0; lineIndex < nl; lineIndex++) {
+            const base = lineIndex * pc;
+
+            overCount = 0;
+            let currentMin = Infinity;
+            for (let i = 0; i < pc; i++) {
+                const effectiveT = tArr[base + i] + timeOffset;
+                if (effectiveT > 1.0) {
+                    overIndices[overCount++] = i;
+                } else if (effectiveT < currentMin) {
+                    currentMin = effectiveT;
+                }
+            }
+
+            if (overCount > 0) {
+                anyReset = true;
+                if (currentMin === Infinity) currentMin = 0;
+                for (let k = 0; k < overCount; k++) {
+                    const pi = base + overIndices[k];
+                    const ri = pi * 3;
+                    // Store in baseT space: desired effective t minus current offset
+                    tArr[pi]          = (currentMin - (k + 1) * spacing) - timeOffset;
+                    randomArr[ri]     = (Math.random() - 0.5) * cs;
+                    randomArr[ri + 1] = (Math.random() - 0.5) * cs;
+                    randomArr[ri + 2] = (Math.random() - 0.5) * cs;
+                }
+            }
+        }
+        // Upload only when particles actually reset (not every frame)
+        if (anyReset) {
+            geometry.attributes.aT.needsUpdate = true;
+            geometry.attributes.aRandom.needsUpdate = true;
+        }
+    }
+
+    update();
+
+    // ========================================
+    // ANIMATION LOOP
+    // ========================================
+    function animate(timestamp) {
+        animationId = requestAnimationFrame(animate);
+        timer.update(timestamp);
+        const rawDelta = timer.getDelta();
+        const delta    = Math.min(rawDelta, CONFIG.maxDelta);
+
+        totalTime = (totalTime + delta) % CONFIG.TIME_WRAP;
+        material.uniforms.totalTime.value = totalTime;
+
+        // Advance t offset (GPU computes t = baseT + offset)
+        timeOffset += CONFIG.speed * delta;
+        material.uniforms.uTimeOffset.value = timeOffset;
+
+        // Periodic rebase: fold offset back into baseT for mediump precision
+        if (timeOffset > 5.0) {
+            for (let i = 0; i < totalParticles; i++) tArr[i] += timeOffset;
+            timeOffset = 0.0;
+            material.uniforms.uTimeOffset.value = 0.0;
+            geometry.attributes.aT.needsUpdate = true;
+        }
+
+        const prevActive = mouseActive;
+        mouseActive += (mouseTargetActive - mouseActive) * Math.min(delta * CONFIG.mouseFadeSpeed, 1.0);
+        material.uniforms.uMouseActive.value = mouseActive;
+        if (mouseActive > 0.001) projectMouseToWorld();
+
+        if (mouseActive > 0.001) {
+            const mwx = material.uniforms.uMouseWorld.value.x;
+            const mwy = material.uniforms.uMouseWorld.value.y;
+            if (prevActive < 0.01 && mouseActive >= 0.01) {
+                trail1X = mwx; trail1Y = mwy;
+                trail2X = mwx; trail2Y = mwy;
+                trail3X = mwx; trail3Y = mwy;
+            }
+            const ws = CONFIG.mouseWakeSpeed;
+            const t1 = Math.min(delta * ws, 1.0);
+            const t2 = Math.min(delta * ws * 0.55, 1.0);
+            const t3 = Math.min(delta * ws * 0.35, 1.0);
+            trail1X += (mwx     - trail1X) * t1;
+            trail1Y += (mwy     - trail1Y) * t1;
+            trail2X += (trail1X - trail2X) * t2;
+            trail2Y += (trail1Y - trail2Y) * t2;
+            trail3X += (trail2X - trail3X) * t3;
+            trail3Y += (trail2Y - trail3Y) * t3;
+            material.uniforms.uMouseTrail1.value.set(trail1X, trail1Y);
+            material.uniforms.uMouseTrail2.value.set(trail2X, trail2Y);
+            material.uniforms.uMouseTrail3.value.set(trail3X, trail3Y);
+        }
+
+        update();
+        if (window._drawConnectionLines) window._drawConnectionLines(delta);
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ========================================
+    // RESIZE — debounced
+    // ========================================
+    let resizeTimer = null;
+    function executeResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
+        updateBounds();
+        material.uniforms.startX.value = startX;
+        material.uniforms.endX.value   = endX;
+        canvasRect = renderer.domElement.getBoundingClientRect();
+    }
+    function onResize() {
+        if (resizeTimer !== null) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(executeResize, CONFIG.resizeDebounceMs);
+    }
+    window.addEventListener('resize', onResize);
+
+    // ========================================
+    // DISPOSE
+    // ========================================
+    function dispose() {
+        if (animationId !== null) { cancelAnimationFrame(animationId); animationId = null; }
+        if (resizeTimer !== null) { clearTimeout(resizeTimer); resizeTimer = null; }
+        scene.remove(particles);
+        geometry.dispose();
+        material.dispose();
+        renderer.dispose();
+        timer.disconnect();
+        timer.dispose();
+        if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
+        window.removeEventListener('resize', onResize);
+        window.removeEventListener('pointermove', onPointerMove);
+        document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+        renderer.domElement.removeEventListener('webglcontextlost',     onContextLost);
+        renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored);
+        tArr = null; randomArr = null; lineParamsArr = null; freqOffsetArr = null;
+        overIndices = null;
+        if (DEBUG) console.log('Geolines V1 disposed');
+    }
+
+    window.geolinesDispose = dispose;
+
+    </script>
+
+
   <script>
+    // ================================================================
+    // VANILLA JS — Form handling, rotating word, tilt, cursor,
+    // connection lines, carousel. No separate rAF loops — connection
+    // lines are called from the Geolines module loop above.
+    // ================================================================
+
     // ── Form submission ──
     function handleSubmit(e) {
       e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      if (btn.disabled) return;
+      btn.disabled = true;
 
       const email = document.getElementById('emailInput').value;
       const form = document.getElementById('earlyAccessForm');
       const success = document.getElementById('formSuccess');
       const note = document.getElementById('formNote');
 
+      btn.classList.add('pulsing');
+
       const googleForm = document.createElement('form');
       googleForm.method = 'POST';
       googleForm.action = 'https://docs.google.com/forms/d/e/1FAIpQLScdKzTfV8XFIxG9m-l0yO79t5o8TIbCy0ysPtKJQ6DGiGuRGw/formResponse';
@@ -838,17 +1654,33 @@
       googleForm.submit();
       document.body.removeChild(googleForm);
 
-      form.style.display = 'none';
-      note.style.display = 'none';
-      success.style.display = 'block';
+      setTimeout(() => {
+        form.style.display = 'none';
+        note.style.display = 'none';
+        success.classList.add('visible');
+
+        // Sync: disable the bottom form too
+        var bottomForm = document.getElementById('earlyAccessFormBottom');
+        var bottomSuccess = document.getElementById('formSuccessBottom');
+        var bottomBtn = document.getElementById('submitBtnBottom');
+        if (bottomForm) bottomForm.style.display = 'none';
+        if (bottomBtn) bottomBtn.disabled = true;
+        if (bottomSuccess) bottomSuccess.classList.add('visible');
+      }, 400);
     }
 
     function handleSubmitBottom(e) {
       e.preventDefault();
 
+      const btn = document.getElementById('submitBtnBottom');
+      if (btn.disabled) return;
+      btn.disabled = true;
+
       const email = document.getElementById('emailInputBottom').value;
       const form = document.getElementById('earlyAccessFormBottom');
       const success = document.getElementById('formSuccessBottom');
+
+      btn.classList.add('pulsing');
 
       const googleForm = document.createElement('form');
       googleForm.method = 'POST';
@@ -865,32 +1697,44 @@
       googleForm.submit();
       document.body.removeChild(googleForm);
 
-      form.style.display = 'none';
-      success.style.display = 'block';
+      setTimeout(() => {
+        form.style.display = 'none';
+        success.classList.add('visible');
+
+        // Sync: disable the top form too
+        var topForm = document.getElementById('earlyAccessForm');
+        var topSuccess = document.getElementById('formSuccess');
+        var topNote = document.getElementById('formNote');
+        var topBtn = document.getElementById('submitBtn');
+        if (topForm) topForm.style.display = 'none';
+        if (topNote) topNote.style.display = 'none';
+        if (topBtn) topBtn.disabled = true;
+        if (topSuccess) topSuccess.classList.add('visible');
+      }, 400);
     }
 
-    // ── Rotating word ──
+    // ── Rotating word — equal-width words, opacity-only swap, zero layout cost ──
     const rotatingWord = document.getElementById('rotatingWord');
     if (rotatingWord) {
       const words = rotatingWord.querySelectorAll('span');
       let currentIndex = 0;
 
-      // Set initial width
-      rotatingWord.style.width = words[0].offsetWidth + 'px';
-
       setInterval(() => {
         words[currentIndex].classList.remove('active');
         currentIndex = (currentIndex + 1) % words.length;
         words[currentIndex].classList.add('active');
-        rotatingWord.style.width = words[currentIndex].offsetWidth + 'px';
       }, 4750);
     }
 
-    // ── 3D tilt ──
-    function applyTilt(el, defaultShadow, shadowEnabled) {
+    // ── 3D tilt — rect cached on mouseenter, not per mousemove ──
+    function applyTilt(el) {
       if (!el) return;
+      let rect;
+      el.addEventListener('mouseenter', () => {
+        rect = el.getBoundingClientRect();
+      });
       el.addEventListener('mousemove', (e) => {
-        const rect = el.getBoundingClientRect();
+        if (!rect) return;
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
@@ -899,71 +1743,80 @@
         const rotateY = (x - centerX) / centerX * 2;
 
         el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        if (shadowEnabled) {
-          el.style.boxShadow = `${-rotateY * 1.5}px ${rotateX * 1.5}px 40px rgba(100, 40, 200, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3)`;
-        }
       });
 
       el.addEventListener('mouseleave', () => {
         el.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
-        if (shadowEnabled) {
-          el.style.boxShadow = defaultShadow;
-        }
       });
     }
 
-    applyTilt(
-      document.getElementById('tiltCard'),
-      '0 0 40px rgba(100, 40, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.3)',
-      true
-    );
+    applyTilt(document.getElementById('tiltCard'));
+    applyTilt(document.getElementById('adviceCarousel'));
 
-    applyTilt(
-      document.getElementById('adviceCarousel'),
-      '',
-      false
-    );
-
-    // ── Custom cursor ──
+    // ── Custom cursor — passive listener, translate3d positioning ──
     const cursor = document.getElementById('cursorGlow');
     const isTouchDevice = 'ontouchstart' in window;
 
     if (!isTouchDevice && cursor) {
+      let cursorVisible = false;
       document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-        if (!cursor.classList.contains('visible')) cursor.classList.add('visible');
-      });
+        cursor.style.transform = `translate3d(${e.clientX - 100}px, ${e.clientY - 100}px, 0)`;
+        if (!cursorVisible) { cursor.classList.add('visible'); cursorVisible = true; }
+      }, { passive: true });
 
       document.addEventListener('mouseleave', () => {
         cursor.classList.remove('visible');
-      });
-
-      // Enlarge cursor on interactive elements
-      const interactives = document.querySelectorAll('a, button, input, .source-item');
-      interactives.forEach(el => {
-        el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
-        el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+        cursorVisible = false;
       });
     }
 
-    // ── Unified connection lines + icon glow system ──
+    // ── Connection lines + icon glow — delta-time based, driven by Geolines rAF ──
     const icons = document.querySelectorAll('.source-item img');
     const canvas = document.getElementById('connectionCanvas');
     const ctx = canvas ? canvas.getContext('2d') : null;
+    const canvasSection = canvas ? canvas.parentElement : null;
     let traces = [];
 
-    function resizeCanvas() {
-      if (!canvas) return;
-      const section = canvas.parentElement;
-      canvas.width = section.offsetWidth;
-      canvas.height = section.offsetHeight;
+    // Reference-counted icon glow — prevents overlapping traces from corrupting each other's state
+    const iconGlowCount = new Map();
+    const iconFadeGen = new Map();
+
+    function glowIcon(idx) {
+      const count = (iconGlowCount.get(idx) || 0) + 1;
+      iconGlowCount.set(idx, count);
+      icons[idx].classList.remove('glow-fade');
+      icons[idx].classList.add('glowing');
     }
 
-    function getIconCenters() {
-      if (!canvas) return [];
-      const sectionRect = canvas.parentElement.getBoundingClientRect();
-      return Array.from(icons).map((icon, i) => {
+    function unglowIcon(idx) {
+      const count = (iconGlowCount.get(idx) || 1) - 1;
+      iconGlowCount.set(idx, count);
+      if (count <= 0) {
+        iconGlowCount.delete(idx);
+        icons[idx].classList.remove('glowing');
+        icons[idx].classList.add('glow-fade');
+        const gen = (iconFadeGen.get(idx) || 0) + 1;
+        iconFadeGen.set(idx, gen);
+        setTimeout(() => {
+          if (iconFadeGen.get(idx) === gen) {
+            icons[idx].classList.remove('glow-fade');
+          }
+        }, 800);
+      }
+    }
+
+    function resizeCanvas() {
+      if (!canvas || !canvasSection) return;
+      canvas.width = canvasSection.offsetWidth;
+      canvas.height = canvasSection.offsetHeight;
+      updateIconCenters();
+    }
+
+    let cachedCenters = [];
+    function updateIconCenters() {
+      if (!canvas || !canvasSection) { cachedCenters = []; return; }
+      const sectionRect = canvasSection.getBoundingClientRect();
+      cachedCenters = Array.from(icons).map((icon, i) => {
         const rect = icon.getBoundingClientRect();
         return {
           x: rect.left + rect.width / 2 - sectionRect.left,
@@ -974,18 +1827,17 @@
     }
 
     function spawnTrace() {
-      const centers = getIconCenters();
-      if (centers.length < 2) return;
+      if (cachedCenters.length < 2) return;
 
       // Pick 2-4 unique icons
       const count = 3 + Math.floor(Math.random() * 2);
       const picked = [];
-      while (picked.length < Math.min(count, centers.length)) {
-        const idx = Math.floor(Math.random() * centers.length);
+      while (picked.length < Math.min(count, cachedCenters.length)) {
+        const idx = Math.floor(Math.random() * cachedCenters.length);
         if (!picked.includes(idx)) picked.push(idx);
       }
 
-      const waypoints = picked.map(i => centers[i]);
+      const waypoints = picked.map(i => cachedCenters[i]);
 
       traces.push({
         waypoints: waypoints,
@@ -993,22 +1845,38 @@
         currentSegment: 0,
         segmentProgress: 0,
         phase: 'drawing',
-        opacity: 0.08,
+        opacity: 0.11,
         holdTime: 0,
         litIcons: [picked[0]]
       });
 
       // Light up the first icon immediately
-      icons[picked[0]].classList.add('glowing');
+      glowIcon(picked[0]);
     }
 
-    function drawTraces() {
+    let canvasDirty = false;
+
+    function drawTraces(delta) {
       if (!ctx) return;
+
+      // Skip all work when no traces are active
+      if (traces.length === 0) {
+        if (canvasDirty) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvasDirty = false;
+        }
+        return;
+      }
+      canvasDirty = true;
+
+      const dt = delta || 0.016;
+      const progressStep = 1.5 * dt;
+      const fadeStep = 0.12 * dt;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       traces = traces.filter(t => {
         if (t.phase === 'drawing') {
-          t.segmentProgress += 0.025;
+          t.segmentProgress += progressStep;
 
           // When line reaches next waypoint, light up that icon
           if (t.segmentProgress >= 1) {
@@ -1020,7 +1888,7 @@
               const iconIdx = t.iconIndices[t.currentSegment];
               if (!t.litIcons.includes(iconIdx)) {
                 t.litIcons.push(iconIdx);
-                icons[iconIdx].classList.add('glowing');
+                glowIcon(iconIdx);
               }
             }
 
@@ -1031,17 +1899,13 @@
             }
           }
         } else if (t.phase === 'hold') {
-          t.holdTime += 0.016;
+          t.holdTime += dt;
           if (t.holdTime > 0.6) t.phase = 'fading';
         } else if (t.phase === 'fading') {
-          t.opacity -= 0.002;
+          t.opacity -= fadeStep;
           if (t.opacity <= 0) {
-            // Return all icons to default
-            t.iconIndices.forEach(idx => {
-              icons[idx].classList.remove('glowing');
-              icons[idx].classList.add('glow-fade');
-              setTimeout(() => icons[idx].classList.remove('glow-fade'), 800);
-            });
+            // Return all icons to default (ref-counted)
+            t.litIcons.forEach(idx => unglowIcon(idx));
             return false;
           }
         }
@@ -1073,14 +1937,16 @@
 
         return true;
       });
-
-      requestAnimationFrame(drawTraces);
     }
+
+    // Bridge registered in startTraces() — no work before sources section is visible
 
     function startTraces() {
       if (!canvas) return;
       resizeCanvas();
-      drawTraces();
+
+      // Register the bridge only when traces are active
+      window._drawConnectionLines = drawTraces;
 
       function scheduleNext() {
         setTimeout(() => {
@@ -1092,7 +1958,11 @@
       setTimeout(() => { spawnTrace(); scheduleNext(); }, 1000);
     }
 
-    window.addEventListener('resize', resizeCanvas);
+    let canvasResizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (canvasResizeTimer !== null) clearTimeout(canvasResizeTimer);
+      canvasResizeTimer = setTimeout(resizeCanvas, 100);
+    });
 
     // Start when sources section is visible
     const sourcesSection = document.querySelector('.sources-section');
@@ -1108,14 +1978,34 @@
 
     // ── Advice carousel ──
     const adviceCards = document.querySelectorAll('.advice-card');
+    const dots = document.querySelectorAll('.carousel-dot');
     if (adviceCards.length > 0) {
       let currentCard = 0;
+      let autoAdvance;
 
-      setInterval(() => {
+      function goToCard(index) {
         adviceCards[currentCard].classList.remove('active');
-        currentCard = (currentCard + 1) % adviceCards.length;
+        dots[currentCard].classList.remove('active');
+        currentCard = index;
         adviceCards[currentCard].classList.add('active');
-      }, 9000);
+        dots[currentCard].classList.add('active');
+      }
+
+      function startAutoAdvance() {
+        autoAdvance = setInterval(() => {
+          goToCard((currentCard + 1) % adviceCards.length);
+        }, 9000);
+      }
+
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+          clearInterval(autoAdvance);
+          goToCard(i);
+          startAutoAdvance();
+        });
+      });
+
+      startAutoAdvance();
     }
   </script>
 
