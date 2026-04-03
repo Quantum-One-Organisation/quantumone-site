@@ -17,7 +17,6 @@
 
   PERFORMANCE RULES:
   - No filter: drop-shadow on animated/composited elements (use text-shadow/box-shadow)
-  - No em dashes in content copy (brand separator "QuantumOne —" only)
   - Mouse listeners must be { passive: true }
   - getBoundingClientRect cached, never called per-frame
   - All CSS animations use GPU-composited properties (transform, opacity)
@@ -95,22 +94,22 @@
     }
 
     /* ── Ambient background glow ──
-       Oversized (142vw×142vh) to cover viewport during translate3d drift.
-       Uses transform animation (GPU-composited) not background-position.
-       Two radial gradients only — third (0.03 opacity) removed as invisible. */
+       Static layer. Rasterised at 71vw×71vh and upscaled via
+       transform: scale(2.4) to reduce compositing cost (~75% less
+       GPU memory vs 142vw×142vh). Smooth gradients are visually
+       identical when upscaled. */
     .ambient-glow {
       position: fixed;
-      top: -21vh;
-      left: -21vw;
-      width: 142vw;
-      height: 142vh;
+      top: 50%;
+      left: 50%;
+      width: 71vw;
+      height: 71vh;
       pointer-events: none;
       z-index: 0;
-      will-change: transform;
+      transform: translate(-50%, -50%) scale(2.4);
       background:
         radial-gradient(ellipse at 50% 20%, rgba(120, 50, 220, 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 60%, rgba(192, 38, 211, 0.05) 0%, transparent 40%);
-      animation: meshDrift 25s ease-in-out infinite;
     }
 
     /* ── Submit button pulse ── */
@@ -122,14 +121,6 @@
 
     .submit-btn.pulsing {
       animation: submitPulse 0.4s ease;
-    }
-
-    @keyframes meshDrift {
-      0%   { transform: translate3d(0, 0, 0); }
-      25%  { transform: translate3d(-20vw, -10vh, 0); }
-      50%  { transform: translate3d(-10vw, -20vh, 0); }
-      75%  { transform: translate3d(7vw, -10vh, 0); }
-      100% { transform: translate3d(0, 0, 0); }
     }
 
     /* ── Main container ── */
@@ -220,14 +211,14 @@
     /* ── Icon glow state ── */
     .source-item img.glowing {
       opacity: 1;
-      filter: drop-shadow(0 0 12px rgba(147, 51, 234, 0.5));
+      filter: drop-shadow(0 0 16px rgba(147, 51, 234, 0.9));
       transition: opacity 0.3s ease, filter 0.3s ease;
     }
 
     .source-item img.glow-fade {
-      opacity: 0.5;
-      filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.25));
-      transition: opacity 0.8s ease, filter 0.8s ease;
+      opacity: 0.42;
+      filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+      transition: opacity 1s ease, filter 1s ease;
     }
 
     @media (max-width: 520px) {
@@ -361,8 +352,8 @@
     .source-item img {
       width: 44px;
       height: 44px;
-      opacity: 0.5;
-      filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.25));
+      opacity: 0.42;
+      filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
       transition: opacity 0.2s ease, filter 0.2s ease;
     }
 
@@ -606,27 +597,44 @@
     .carousel-dots {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 0;
       margin-top: 24px;
     }
 
+    /* ── Carousel dots — 48×48 touch target (Lighthouse Best Practices).
+       Visual 6px dot rendered via ::after. Negative margin preserves
+       original 10px visual gap between dots. ── */
     .carousel-dot {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      position: relative;
+      margin: 0 -16px;
+    }
+
+    .carousel-dot::after {
+      content: '';
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: var(--text-muted);
-      border: none;
-      padding: 0;
-      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       transition: background 0.3s ease, transform 0.3s ease;
     }
 
-    .carousel-dot.active {
+    .carousel-dot.active::after {
       background: var(--accent-purple);
-      transform: scale(1.35);
+      transform: translate(-50%, -50%) scale(1.35);
     }
 
-    .carousel-dot:hover {
+    .carousel-dot:hover::after {
       background: var(--accent-pink);
     }
 
@@ -645,7 +653,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: var(--text-muted);
+      color: #7d7896;
       text-decoration: none;
       font-size: 12px;
       letter-spacing: 0.5px;
@@ -725,7 +733,7 @@
 
     .footer-disclaimer {
       font-size: 10px;
-      color: var(--text-muted);
+      color: #7d7896;
       line-height: 1.7;
       max-width: 600px;
       margin: 0 auto;
@@ -791,7 +799,7 @@
 
     <!-- Logo -->
     <div class="logo">
-      <img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" />
+      <img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" width="297" height="48" />
     </div>
 
     <!-- Accent line -->
@@ -1051,7 +1059,7 @@
         // Safety
         maxDelta:          0.1,
         TIME_WRAP:         3200.0 * Math.PI,
-        maxPixelRatio:     2,
+        maxPixelRatio:     1.5,
 
         // Resize
         resizeDebounceMs:  100,
@@ -1104,6 +1112,7 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
     renderer.setClearColor(0x000000, 0);
+    renderer.autoClearDepth = false;
     renderer.domElement.id = 'geolines-canvas';
     document.body.appendChild(renderer.domElement);
 
@@ -1801,14 +1810,21 @@
           if (iconFadeGen.get(idx) === gen) {
             icons[idx].classList.remove('glow-fade');
           }
-        }, 800);
+        }, 1000);
       }
     }
 
+    let canvasCssW = 0;
+    let canvasCssH = 0;
+
     function resizeCanvas() {
       if (!canvas || !canvasSection) return;
-      canvas.width = canvasSection.offsetWidth;
-      canvas.height = canvasSection.offsetHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvasCssW = canvasSection.offsetWidth;
+      canvasCssH = canvasSection.offsetHeight;
+      canvas.width = canvasCssW * dpr;
+      canvas.height = canvasCssH * dpr;
+      ctx.scale(dpr, dpr);
       updateIconCenters();
     }
 
@@ -1845,7 +1861,7 @@
         currentSegment: 0,
         segmentProgress: 0,
         phase: 'drawing',
-        opacity: 0.11,
+        opacity: 0.121,
         holdTime: 0,
         litIcons: [picked[0]]
       });
@@ -1862,7 +1878,7 @@
       // Skip all work when no traces are active
       if (traces.length === 0) {
         if (canvasDirty) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.clearRect(0, 0, canvasCssW, canvasCssH);
           canvasDirty = false;
         }
         return;
@@ -1870,9 +1886,9 @@
       canvasDirty = true;
 
       const dt = delta || 0.016;
-      const progressStep = 1.5 * dt;
+      const progressStep = 1.65 * dt;
       const fadeStep = 0.12 * dt;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvasCssW, canvasCssH);
 
       traces = traces.filter(t => {
         if (t.phase === 'drawing') {
@@ -1900,19 +1916,21 @@
           }
         } else if (t.phase === 'hold') {
           t.holdTime += dt;
-          if (t.holdTime > 0.6) t.phase = 'fading';
+          if (t.holdTime > 0.6) {
+            t.phase = 'fading';
+            // Release icons at start of fade — CSS transition runs in sync with trace
+            t.litIcons.forEach(idx => unglowIcon(idx));
+          }
         } else if (t.phase === 'fading') {
           t.opacity -= fadeStep;
           if (t.opacity <= 0) {
-            // Return all icons to default (ref-counted)
-            t.litIcons.forEach(idx => unglowIcon(idx));
             return false;
           }
         }
 
         // Draw all completed segments
         ctx.strokeStyle = `rgba(147, 51, 234, ${t.opacity})`;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
 
         for (let s = 0; s < t.waypoints.length - 1; s++) {
           const from = t.waypoints[s];
