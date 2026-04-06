@@ -88,6 +88,7 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
     }
 
     body {
@@ -223,7 +224,7 @@
     }
 
     .source-item img.glow-fade {
-      opacity: 0.42;
+      opacity: 0.4;
       filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
       transition: opacity 1s ease, filter 1s ease;
     }
@@ -359,7 +360,7 @@
     .source-item img {
       width: 44px;
       height: 44px;
-      opacity: 0.42;
+      opacity: 0.4;
       filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
       transition: opacity 0.2s ease, filter 0.2s ease;
     }
@@ -385,6 +386,11 @@
       .sources-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 30px 10px;
+      }
+
+      .source-item img {
+        width: 38px;
+        height: 38px;
       }
     }
 
@@ -538,7 +544,7 @@
        min-height set to accommodate tallest card (card 4, bedtime). ── */
     .advice-carousel {
       position: relative;
-      min-height: 260px;
+      min-height: 252px;
       transition: transform 0.15s ease;
     }
 
@@ -592,7 +598,7 @@
 
     @media (max-width: 520px) {
       .advice-carousel {
-        min-height: 320px;
+        min-height: 312px;
       }
 
       .advice-card-inner {
@@ -605,28 +611,27 @@
       display: flex;
       justify-content: center;
       gap: 0;
-      margin-top: 24px;
+      margin-top: 2px;
     }
 
-    /* ── Carousel dots — 48×48 touch target (Lighthouse Best Practices).
-       Visual 6px dot rendered via ::after. Negative margin preserves
-       original 10px visual gap between dots. ── */
+    /* ── Carousel dots — 34×34 touch target with 8px visual dot.
+       Negative margin controls visual spacing between dots. ── */
     .carousel-dot {
-      width: 48px;
-      height: 48px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: transparent;
       border: none;
       padding: 0;
       cursor: pointer;
       position: relative;
-      margin: 0 -16px;
+      margin: 0 -4px;
     }
 
     .carousel-dot::after {
       content: '';
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--text-muted);
       position: absolute;
@@ -748,6 +753,10 @@
 
     /* ── Responsive ── */
     @media (max-width: 520px) {
+      .container {
+        padding: 0 16px;
+      }
+
       .headline {
         font-size: 26px;
         white-space: normal;
@@ -782,8 +791,8 @@
       position: fixed;
       top: 100px;
       left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       z-index: 0;
       pointer-events: none;
       touch-action: none;
@@ -854,7 +863,7 @@
 
     <!-- Subtext -->
     <p class="subtext">
-      <span class="subtext-lead">The world's first Personal Optimisation Engine.</span><br/>
+      <span class="subtext-lead">The world's first<br class="mobile-break" /> Personal Optimisation Engine.</span><br/>
       The engine uncovers complex interactions between your genetics, biohacks, blood, nootropics, and surroundings to uncover previously impossible insights. You receive precise actions and expected impacts.<br/><br/>Pure continuous accelerated growth.
     </p>
 
@@ -885,7 +894,7 @@
 
     <!-- Data Sources -->
     <div class="sources-section">
-      <div class="sources-label">The world's first personal optimisation engine</div>
+      <div class="sources-label">The world's first<br class="mobile-break" /> personal optimisation engine</div>
       <canvas class="connection-canvas" id="connectionCanvas"></canvas>
       <div class="sources-grid">
         <div class="source-item">
@@ -967,24 +976,24 @@
         <div class="advice-card">
           <div class="advice-card-inner">
             <div class="advice-title">Reduce gluten intake</div>
-            <div class="advice-body">Since increasing gluten 3 weeks ago, your sleep quality dropped 14%, HRV fell 9%, and exercise recovery slowed by 11%. Air quality and pollen are ruled out. The correlation points to diet. Reducing gluten is projected to reverse these within 10 days.</div>
-            <div class="advice-sources"><span>Sources:</span> Nutrition · Sleep · Heart Health · Exercise · Air, Mould &amp; Pollen</div>
+            <div class="advice-body">Since increasing gluten 2 weeks ago, your sleep quality dropped 21%, HRV fell 9%, and snoring increased by 34%. Your genetics indicate gluten sensitivity. Reducing gluten is projected to reverse these within 10 days.</div>
+            <div class="advice-sources"><span>Sources:</span> Nutrition · Sleep · Heart Health · Exercise · Environment · Genetics</div>
           </div>
         </div>
 
         <div class="advice-card">
           <div class="advice-card-inner">
-            <div class="advice-title">Your L-Theanine stack is working</div>
-            <div class="advice-body">Since adding 200mg L-Theanine to your morning stack 12 days ago, deep sleep increased 22%, resting heart rate dropped 4 bpm, and your DEXA shows a 0.3% reduction in visceral fat. No negative interactions detected with your other supplements.</div>
-            <div class="advice-sources"><span>Sources:</span> Nootropics &amp; Supps · Sleep · Heart Health · DEXA Scans · Body Composition</div>
+            <div class="advice-title">Your L-Theanine is working</div>
+            <div class="advice-body">Since adding 200mg L-Theanine to your morning stack 12 days ago, deep sleep increased 22%, resting heart rate dropped 4 bpm, and your cortisol has lowered 7%. No negative interactions detected with your other supplements.</div>
+            <div class="advice-sources"><span>Sources:</span> Nootropics &amp; Supps · Sleep · Heart Health · Blood Tests</div>
           </div>
         </div>
 
         <div class="advice-card">
           <div class="advice-card-inner">
             <div class="advice-title">Move your bedtime 30 mins earlier</div>
-            <div class="advice-body">On nights you slept before 10:30pm, your blood glucose was 8% more stable, next-day step count increased 19%, and tap water contaminant sensitivity decreased. Your biohack of evening cold exposure amplifies this, and the combined impact is projected at 24% better recovery.</div>
-            <div class="advice-sources"><span>Sources:</span> Sleep · Biohacks · Blood Tests · Exercise · Tap Water Quality · Body Composition</div>
+            <div class="advice-body">On nights you slept before 10:30pm, your blood glucose was 8% more stable, next-day step count increased 19%, and sleep quality increased 14% over baseline. Your biohack of evening red light therapy amplifies this, with a combined impact of 24% better recovery.</div>
+            <div class="advice-sources"><span>Sources:</span> Sleep · Biohacks · Blood Tests · Exercise · Wearables</div>
           </div>
         </div>
 
@@ -1157,6 +1166,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
     renderer.setClearColor(0x000000, 0);
     renderer.autoClearDepth = false;
+    renderer.autoClearStencil = false;
     renderer.domElement.id = 'geolines-canvas';
     document.body.appendChild(renderer.domElement);
 
@@ -1905,7 +1915,7 @@
         currentSegment: 0,
         segmentProgress: 0,
         phase: 'drawing',
-        opacity: 0.121,
+        opacity: 0.15,
         holdTime: 0,
         litIcons: [picked[0]]
       });
