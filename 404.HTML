@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#06040d">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found — QuantumOne</title>
+  <meta name="robots" content="noindex" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Google Fonts (non-blocking) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" /></noscript>
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./Logo/Favicon/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./Logo/Favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="./Logo/Favicon/site.webmanifest" />
+
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #06040d;
+      color: #e2dee9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 24px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      padding-top: 48px;
+      margin-bottom: 0;
+    }
+
+    .logo img {
+      width: 180px;
+      max-width: 100%;
+      height: auto;
+      opacity: 0.88;
+    }
+
+    .error-code {
+      font-size: 72px;
+      font-weight: 300;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #B936CE, #48349D);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .error-message {
+      font-size: 18px;
+      font-weight: 400;
+      color: #9a93b0;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .home-link {
+      display: inline-block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #6d28d9, #9333ea, #c026d3);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #F6F3A6;
+      text-decoration: none;
+      box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .home-link:hover {
+      box-shadow: 0 0 28px rgba(147, 51, 234, 0.45), 0 4px 16px rgba(0, 0, 0, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .home-link:active {
+      transform: translateY(0);
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      width: 100%;
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .page-footer-links {
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .page-footer-links-secondary {
+      margin-bottom: 20px;
+    }
+
+    .page-footer-links a {
+      color: #AFAC79;
+      text-decoration: none;
+    }
+
+    .page-footer-links span {
+      color: #5a5475;
+      padding: 0 8px;
+    }
+
+    .page-footer-disclaimer {
+      font-size: 10px;
+      color: #7d7896;
+      line-height: 1.7;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" width="180" height="29" />
+  </div>
+
+  <div class="content">
+    <div class="error-code">404</div>
+    <p class="error-message">This page doesn't exist.</p>
+    <a href="https://www.quantumone.app/" class="home-link">Back to home</a>
+  </div>
+
+  <footer class="page-footer">
+    <div class="page-footer-links">
+      <a href="https://www.quantumone.app/">Home</a>
+      <span>|</span>
+      <a href="https://www.quantumone.app/privacy.html">Privacy Policy</a>
+      <span>|</span>
+      <a href="https://www.quantumone.app/terms.html">Terms &amp; Conditions</a>
+      <span>|</span>
+      <a href="https://www.quantumone.app/disclaimer.html">Medical Disclaimer</a>
+    </div>
+    <div class="page-footer-links page-footer-links-secondary">
+      <a href="https://www.quantumone.app/do-not-sell-or-share.html">Do Not Sell or Share My Personal Information</a>
+      <span>|</span>
+      <a href="https://www.quantumone.app/consumer-health-data.html">Consumer Health Data Privacy Policy</a>
+    </div>
+    <div class="page-footer-disclaimer">
+      QuantumOne is a general wellness and self-optimization tool. It is not a medical device
+      and does not provide medical advice, diagnosis, or treatment. Correlations and advice are
+      statistical estimates, not clinical predictions. Always consult a qualified healthcare
+      professional before making health decisions.
+    </div>
+  </footer>
+
+</body>
+</html>
