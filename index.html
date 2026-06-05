@@ -5,13 +5,13 @@
 
   ARCHITECTURE:
   Single self-contained HTML file. All CSS inline, all JS inline.
-  Only external dependency: Three.js v0.183 via CDN importmap.
-  Monolithic structure is intentional — one HTTP request for the critical path.
-  Do NOT split into external CSS/JS files.
+  Zero external runtime dependencies — the particle animation is raw WebGL
+  (WebGL 1, GLSL ES 1.0), no Three.js, no CDN. One HTTP request for the
+  critical path. Do NOT split into external CSS/JS files.
 
   ANIMATION SYSTEM:
   One requestAnimationFrame loop (Geolines) drives everything:
-  - Three.js particle scene (GPU shaders)
+  - Raw WebGL particle scene (GPU shaders, hand-written GL pipeline)
   - Connection lines canvas (via window._drawConnectionLines)
   Do NOT add separate rAF loops.
 
@@ -21,7 +21,7 @@
   - getBoundingClientRect cached, never called per-frame
   - All CSS animations use GPU-composited properties (transform, opacity)
 
-  FONTS: DM Sans only (5 weights: 300-700, non-blocking load). Telegraf removed.
+  FONTS: DM Sans only (3 weights: 300, 400, 600, non-blocking load). Telegraf removed.
   FAVICONS: 32x32 PNG + apple-touch-icon only. .ico and 16x16 removed.
 -->
 <html lang="en" style="background:#06040d">
@@ -51,11 +51,8 @@
   <!-- Google Fonts (non-blocking, swap on load) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" /></noscript>
-
-  <!-- Preload critical external module -->
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" /></noscript>
 
   <!-- Canonical URL -->
   <link rel="canonical" href="https://www.quantumone.app/" />
@@ -303,7 +300,7 @@
 
     .subtext-lead {
       color: #c8c2d8;
-      font-weight: 500;
+      font-weight: 600;
       font-size: 18px;
     }
 
@@ -333,7 +330,7 @@
 
     .sources-label {
       font-size: 19px;
-      font-weight: 500;
+      font-weight: 600;
       color: #b8b2cc;
       letter-spacing: 0.3px;
       margin-bottom: 36px;
@@ -412,7 +409,7 @@
 
     .card-label {
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       color: #b8b2cc;
       margin-bottom: 20px;
       text-align: center;
@@ -504,7 +501,7 @@
     .success-check {
       display: inline-block;
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
       width: 22px;
       height: 22px;
       line-height: 22px;
@@ -533,7 +530,7 @@
 
     .advice-section-label {
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       color: #7d7896;
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -692,7 +689,7 @@
 
     .bottom-cta-label {
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       color: #7d7896;
       margin-bottom: 16px;
     }
@@ -798,14 +795,6 @@
       touch-action: none;
     }
   </style>
-  <!-- Three.js importmap — core only, no addons (unused entry removed) -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js"
-      }
-    }
-  </script>
 
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -1067,615 +1056,691 @@
 
   <!-- Geolines V1 — Background particle animation -->
     <script type="module">
-    import * as THREE from 'three';
+    // ============================================================
+    // Geolines — Raw WebGL renderer (WebGL 1, GLSL ES 1.0).
+    // Replaces the former Three.js implementation. No external deps.
+    // Colour mode locked to 'linear' (matches the prior Three.js
+    // ColorManagement output, confirmed by side-by-side comparison).
+    // ============================================================
+// ============================================================
+// Geolines — Raw WebGL renderer (WebGL 1, GLSL ES 1.0)
+// Drop-in replacement for the Three.js version.
+// Exposes start()/dispose() and window._drawConnectionLines hook.
+// ============================================================
 
-    const DEBUG = false;
+function createGeolinesRaw(opts) {
+  const COLOR_MODE = opts && opts.colorMode ? opts.colorMode : 'linear'; // 'linear' | 'srgb'
 
-    // ========================================
-    // CENTRAL CONFIG — single source of truth
-    // ========================================
-    const CONFIG = {
-        // Wave shape
-        baseFrequency:     0.8,
-        amplitudePeriod:   13,
-        yTilt:             2,
-        zTilt:             1,
-        baseSize:          0.08,
-        sizeVariation:     0.05,
-        startSpreadFactor: 1.0,
-        offsetStep:        0.17,
+  const CONFIG = {
+    baseFrequency: 0.8, amplitudePeriod: 13, yTilt: 2, zTilt: 1,
+    baseSize: 0.08, sizeVariation: 0.05, startSpreadFactor: 1.0, offsetStep: 0.17,
+    particleCount: 120, numLines: 30, speed: 0.05,
+    fadeInDist: 0.1, fadeOutDist: 0.01,
+    chaosThreshold: 0.45, chaosStrength: 2.0, zChaosDamping: 0.01,
+    gradientPositions: [0.29, 0.37, 0.6, 0.85, 1.0],
+    gradientColors: ['#C7C7C7', '#816DD5', '#B936CE', '#5539C6', '#5539C6'],
+    cameraFov: 75, cameraNear: 0.1, cameraFar: 1000, cameraZ: 15,
+    maxDelta: 0.1, TIME_WRAP: 3200.0 * Math.PI, maxPixelRatio: 1.5,
+    resizeDebounceMs: 100, entryPadding: 0.7, exitPadding: 0.1,
+    mouseRadius: 2.5, mouseStrength: 0.5, mouseFadeSpeed: 5.0,
+    mouseBrighten: 0.25, mouseSizeBoost: 0.12, mouseWakeSpeed: 4.8, mouseWakeBright: 0.75,
+    mouseRippleStrength: 0.75, mouseRippleFreq: 1.5, mouseRippleSpeed: 3.0, mouseRippleRadius: 2.5,
+  };
 
-        // Particles
-        particleCount:     120,
-        numLines:          30,
-        speed:             0.05,
+  const amplitudeSpeed = 4.0 * Math.PI / CONFIG.amplitudePeriod;
+  const yOffset = -CONFIG.yTilt / 2;
+  const totalParticles = CONFIG.numLines * CONFIG.particleCount;
+  const spacing = 1.5 / (CONFIG.particleCount - 1);
 
-        // Fade
-        fadeInDist:        0.1,
-        fadeOutDist:       0.01,
+  // ---- Colour: match Three.js ColorManagement (sRGB hex -> linear) ----
+  function srgbToLinear(c) {
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function hexToRGB(hex) {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    if (COLOR_MODE === 'linear') return [srgbToLinear(r), srgbToLinear(g), srgbToLinear(b)];
+    return [r, g, b];
+  }
+  const gradientFlat = new Float32Array(15);
+  CONFIG.gradientColors.forEach((hex, i) => {
+    const c = hexToRGB(hex);
+    gradientFlat[i * 3] = c[0]; gradientFlat[i * 3 + 1] = c[1]; gradientFlat[i * 3 + 2] = c[2];
+  });
 
-        // Chaos scatter
-        chaosThreshold:    0.45,
-        chaosStrength:     2.0,
-        zChaosDamping:     0.01,
+  // ---- Canvas + GL context (match Three.js defaults) ----
+  const canvas = document.createElement('canvas');
+  canvas.id = 'geolines-canvas';
+  const glAttribs = { alpha: true, premultipliedAlpha: true, antialias: false,
+                      powerPreference: 'high-performance', depth: false, stencil: false };
+  let gl = canvas.getContext('webgl', glAttribs) || canvas.getContext('experimental-webgl', glAttribs);
+  if (!gl) throw new Error('WebGL not supported');
+  document.body.appendChild(canvas);
 
-        // Gradient
-        gradientPositions: [0.29, 0.37, 0.6, 0.85, 1.0],
-        gradientColors:    ['#C7C7C7', '#816DD5', '#B936CE', '#5539C6', '#5539C6'],
+  // ---- Shaders ----
+  const vertexShaderSrc = `
+    precision mediump float;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
 
-        // Camera
-        cameraFov:         75,
-        cameraNear:        0.1,
-        cameraFar:         1000,
-        cameraZ:           15,
+    attribute highp float aT;
+    attribute vec3  aRandom;
+    attribute vec4  aLineParams;
+    attribute float aFreqOffset;
 
-        // Safety
-        maxDelta:          0.1,
-        TIME_WRAP:         3200.0 * Math.PI,
-        maxPixelRatio:     1.5,
+    uniform float totalTime;
+    uniform float startX;
+    uniform float endX;
+    uniform float uBaseFrequency;
+    uniform float uAmplitudeSpeed;
+    uniform float uYTilt;
+    uniform float uYOffset;
+    uniform float uZTilt;
+    uniform float uBaseSize;
+    uniform float uSizeVariation;
+    uniform float uStartSpreadFactor;
+    uniform float uFadeInDist;
+    uniform float uFadeOutDist;
+    uniform float uChaosThreshold;
+    uniform float uZChaosDamping;
+    uniform vec3  uGradientColors[5];
+    uniform float uGradientPositions[5];
+    uniform vec2  uMouseWorld;
+    uniform float uMouseActive;
+    uniform float uMouseRadius;
+    uniform float uMouseStrength;
+    uniform float uMouseBrighten;
+    uniform float uMouseSizeBoost;
+    uniform vec2  uMouseTrail1;
+    uniform vec2  uMouseTrail2;
+    uniform vec2  uMouseTrail3;
+    uniform float uMouseWakeBright;
+    uniform float uMouseRippleStrength;
+    uniform float uMouseRippleFreq;
+    uniform float uMouseRippleSpeed;
+    uniform float uMouseRippleRadius;
+    uniform highp float uTimeOffset;
 
-        // Resize
-        resizeDebounceMs:  100,
+    varying vec3  vColor;
+    varying float vAlpha;
 
-        // Bounds padding
-        entryPadding:      0.7,
-        exitPadding:       0.1,
+    vec3 mod289_v3(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec2 mod289_v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec3 permute(vec3 x)   { return mod289_v3((x * 34.0 + 1.0) * x); }
 
-        // Mouse interaction
-        mouseRadius:       2.5,
-        mouseStrength:     0.5,
-        mouseFadeSpeed:    5.0,
-        mouseBrighten:     0.25,
-        mouseSizeBoost:    0.12,
-        mouseWakeSpeed:    4.8,
-        mouseWakeBright:   0.75,
-        mouseRippleStrength: 0.75,   // vertical displacement amplitude (subtle)
-        mouseRippleFreq:     1.5,    // spatial frequency (wide soft undulations)
-        mouseRippleSpeed:    3.0,    // ring propagation speed
-        mouseRippleRadius:   2.5,    // max distance ripple is visible
+    float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy));
+        vec2 x0 = v - i + dot(i, C.xx);
+        vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
+        i = mod289_v2(i);
+        vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+        vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+        m = m * m; m = m * m;
+        vec3 xg = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h  = abs(xg) - 0.5;
+        vec3 ox = floor(xg + 0.5);
+        vec3 a0 = xg - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+        vec3 g;
+        g.x  = a0.x * x0.x   + h.x * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+    }
+
+    void main() {
+        highp float t = aT + uTimeOffset;
+        float clampedT = clamp(t, 0.0, 1.0);
+
+        float aLineOffset  = aLineParams.x;
+        float aHighAmp     = aLineParams.y;
+        float aLowAmp      = aLineParams.z;
+        float aPhaseOffset = aLineParams.w;
+
+        float amplitude = aLowAmp + (aHighAmp - aLowAmp)
+            * (0.5 + 0.5 * sin(totalTime * uAmplitudeSpeed + aPhaseOffset));
+        float freq = uBaseFrequency + aFreqOffset;
+        float x = startX + t * (endX - startX);
+
+        const float PI     = 3.14159265;
+        const float TWO_PI = 6.28318530;
+        float spread = 1.5 * sin(PI * t);
+        float wave = amplitude * (
+            sin(TWO_PI * freq * t)
+          + 0.5 * sin(4.0 * PI * freq * t)
+          + 0.25 * sin(6.0 * PI * freq * t)
+        );
+        wave *= sin(PI * t);
+
+        float y = wave
+            + aLineOffset * (spread * 0.8 + (1.0 - t) * uStartSpreadFactor)
+            + t * uYTilt + uYOffset;
+
+        float z = aLineOffset * spread * 1.3 * cos(PI * t + aPhaseOffset)
+            + t * uZTilt * 0.2
+            + sin(t * PI * 5.0 + aPhaseOffset) * 0.5;
+
+        if (t < uChaosThreshold) {
+            float chaosAmount = 1.0 - t / uChaosThreshold;
+            x += aRandom.x * chaosAmount;
+            y += aRandom.y * chaosAmount;
+            z += aRandom.z * chaosAmount * uZChaosDamping;
+            float noiseStrength = chaosAmount * 0.1;
+            y += snoise(vec2(t * 10.0, totalTime * 0.9 + aLineOffset)) * noiseStrength * 1.7;
+        }
+
+        vec3 particleColor = uGradientColors[0];
+        if (clampedT >= uGradientPositions[0]) {
+            for (int j = 0; j < 4; j++) {
+                if (clampedT >= uGradientPositions[j] && clampedT <= uGradientPositions[j + 1]) {
+                    float factor = (clampedT - uGradientPositions[j])
+                                 / (uGradientPositions[j + 1] - uGradientPositions[j]);
+                    particleColor = mix(uGradientColors[j], uGradientColors[j + 1], factor);
+                    break;
+                }
+            }
+        }
+
+        float alpha = clamp(t / uFadeInDist, 0.0, 1.0)
+                    * clamp((1.0 - t) / uFadeOutDist, 0.0, 1.0)
+                    * 0.375;
+
+        float sizeWave = abs(wave / max(amplitude, 0.001));
+        float particleSize = uBaseSize + uSizeVariation * sizeWave;
+
+        if (uMouseActive > 0.001) {
+            vec2 toParticle = vec2(x, y) - uMouseWorld;
+            float mouseDist = max(length(toParticle), 0.001);
+            float mouseInfluence = (1.0 - smoothstep(0.0, uMouseRadius, mouseDist)) * uMouseActive;
+
+            float repulseInfluence = mouseInfluence * mouseInfluence;
+            vec2 pushDir = toParticle / mouseDist;
+            x += pushDir.x * repulseInfluence * uMouseStrength;
+            y += pushDir.y * repulseInfluence * uMouseStrength;
+
+            float wake1 = (1.0 - smoothstep(0.0, uMouseRadius * 1.3, length(vec2(x, y) - uMouseTrail1))) * uMouseActive;
+            float wake2 = (1.0 - smoothstep(0.0, uMouseRadius * 1.1, length(vec2(x, y) - uMouseTrail2))) * uMouseActive;
+            float wake3 = (1.0 - smoothstep(0.0, uMouseRadius * 0.9, length(vec2(x, y) - uMouseTrail3))) * uMouseActive;
+            float wakeInfluence = (wake1 * 0.55 + wake2 * 0.3 + wake3 * 0.15) * uMouseWakeBright;
+
+            float brighten = max(mouseInfluence * uMouseBrighten, wakeInfluence);
+            particleColor = mix(particleColor, vec3(1.0), brighten);
+            particleSize *= 1.0 + mouseInfluence * uMouseSizeBoost;
+            alpha = mix(alpha, 1.0, max(mouseInfluence, wakeInfluence));
+
+            float rippleDist = length(vec2(x, y) - mix(uMouseTrail2, uMouseWorld, 0.3));
+            float rippleFade = 1.0 - smoothstep(0.0, uMouseRippleRadius, rippleDist);
+            float ripplePhase = rippleDist * uMouseRippleFreq - totalTime * uMouseRippleSpeed;
+            y += sin(ripplePhase) * rippleFade * uMouseRippleStrength;
+        }
+
+        vColor = particleColor;
+        vAlpha = alpha;
+        vec4 mvPosition = modelViewMatrix * vec4(x, y, z, 1.0);
+        gl_PointSize = particleSize * (300.0 / -mvPosition.z);
+        gl_Position  = projectionMatrix * mvPosition;
+    }
+  `;
+
+  const fragmentShaderSrc = `
+    precision mediump float;
+    varying vec3  vColor;
+    varying float vAlpha;
+    void main() {
+        // Premultiplied output: colour scaled by alpha so the alpha
+        // multiplier actually controls brightness against the dark bg.
+        gl_FragColor = vec4(vColor * vAlpha, vAlpha);
+    }
+  `;
+
+  // ---- Matrix helpers (column-major, WebGL order) ----
+  function makePerspective(fovDeg, aspect, near, far) {
+    const f = 1 / Math.tan((fovDeg * Math.PI / 180) / 2);
+    const nf = 1 / (near - far);
+    return new Float32Array([
+      f / aspect, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, (far + near) * nf, -1,
+      0, 0, 2 * far * near * nf, 0
+    ]);
+  }
+  // Static model-view: camera at (0,0,15) looking down -Z, model identity -> translate(0,0,-15)
+  const modelViewMatrix = new Float32Array([
+    1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, -CONFIG.cameraZ, 1
+  ]);
+  // camera world matrix translate(0,0,+15) for unproject
+  const cameraWorld = new Float32Array([
+    1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, CONFIG.cameraZ, 1
+  ]);
+
+  function mul4(a, b) {
+    const o = new Float32Array(16);
+    for (let c = 0; c < 4; c++) {
+      for (let r = 0; r < 4; r++) {
+        o[c * 4 + r] = a[0 * 4 + r] * b[c * 4 + 0]
+                     + a[1 * 4 + r] * b[c * 4 + 1]
+                     + a[2 * 4 + r] * b[c * 4 + 2]
+                     + a[3 * 4 + r] * b[c * 4 + 3];
+      }
+    }
+    return o;
+  }
+
+  function invert4(m) {
+    const inv = new Float32Array(16);
+    inv[0] = m[5]*m[10]*m[15] - m[5]*m[11]*m[14] - m[9]*m[6]*m[15] + m[9]*m[7]*m[14] + m[13]*m[6]*m[11] - m[13]*m[7]*m[10];
+    inv[4] = -m[4]*m[10]*m[15] + m[4]*m[11]*m[14] + m[8]*m[6]*m[15] - m[8]*m[7]*m[14] - m[12]*m[6]*m[11] + m[12]*m[7]*m[10];
+    inv[8] = m[4]*m[9]*m[15] - m[4]*m[11]*m[13] - m[8]*m[5]*m[15] + m[8]*m[7]*m[13] + m[12]*m[5]*m[11] - m[12]*m[7]*m[9];
+    inv[12] = -m[4]*m[9]*m[14] + m[4]*m[10]*m[13] + m[8]*m[5]*m[14] - m[8]*m[6]*m[13] - m[12]*m[5]*m[10] + m[12]*m[6]*m[9];
+    inv[1] = -m[1]*m[10]*m[15] + m[1]*m[11]*m[14] + m[9]*m[2]*m[15] - m[9]*m[3]*m[14] - m[13]*m[2]*m[11] + m[13]*m[3]*m[10];
+    inv[5] = m[0]*m[10]*m[15] - m[0]*m[11]*m[14] - m[8]*m[2]*m[15] + m[8]*m[3]*m[14] + m[12]*m[2]*m[11] - m[12]*m[3]*m[10];
+    inv[9] = -m[0]*m[9]*m[15] + m[0]*m[11]*m[13] + m[8]*m[1]*m[15] - m[8]*m[3]*m[13] - m[12]*m[1]*m[11] + m[12]*m[3]*m[9];
+    inv[13] = m[0]*m[9]*m[14] - m[0]*m[10]*m[13] - m[8]*m[1]*m[14] + m[8]*m[2]*m[13] + m[12]*m[1]*m[10] - m[12]*m[2]*m[9];
+    inv[2] = m[1]*m[6]*m[15] - m[1]*m[7]*m[14] - m[5]*m[2]*m[15] + m[5]*m[3]*m[14] + m[13]*m[2]*m[7] - m[13]*m[3]*m[6];
+    inv[6] = -m[0]*m[6]*m[15] + m[0]*m[7]*m[14] + m[4]*m[2]*m[15] - m[4]*m[3]*m[14] - m[12]*m[2]*m[7] + m[12]*m[3]*m[6];
+    inv[10] = m[0]*m[5]*m[15] - m[0]*m[7]*m[13] - m[4]*m[1]*m[15] + m[4]*m[3]*m[13] + m[12]*m[1]*m[7] - m[12]*m[3]*m[5];
+    inv[14] = -m[0]*m[5]*m[14] + m[0]*m[6]*m[13] + m[4]*m[1]*m[14] - m[4]*m[2]*m[13] - m[12]*m[1]*m[6] + m[12]*m[2]*m[5];
+    inv[3] = -m[1]*m[6]*m[11] + m[1]*m[7]*m[10] + m[5]*m[2]*m[11] - m[5]*m[3]*m[10] - m[9]*m[2]*m[7] + m[9]*m[3]*m[6];
+    inv[7] = m[0]*m[6]*m[11] - m[0]*m[7]*m[10] - m[4]*m[2]*m[11] + m[4]*m[3]*m[10] + m[8]*m[2]*m[7] - m[8]*m[3]*m[6];
+    inv[11] = -m[0]*m[5]*m[11] + m[0]*m[7]*m[9] + m[4]*m[1]*m[11] - m[4]*m[3]*m[9] - m[8]*m[1]*m[7] + m[8]*m[3]*m[5];
+    inv[15] = m[0]*m[5]*m[10] - m[0]*m[6]*m[9] - m[4]*m[1]*m[10] + m[4]*m[2]*m[9] + m[8]*m[1]*m[6] - m[8]*m[2]*m[5];
+    let det = m[0]*inv[0] + m[1]*inv[4] + m[2]*inv[8] + m[3]*inv[12];
+    if (det === 0) return null;
+    det = 1.0 / det;
+    for (let i = 0; i < 16; i++) inv[i] *= det;
+    return inv;
+  }
+
+  let projectionMatrix, unprojectMatrix;
+  function rebuildMatrices(aspect) {
+    projectionMatrix = makePerspective(CONFIG.cameraFov, aspect, CONFIG.cameraNear, CONFIG.cameraFar);
+    const invProj = invert4(projectionMatrix);
+    unprojectMatrix = mul4(cameraWorld, invProj); // matrixWorld * projInverse
+  }
+
+  // ---- Bounds ----
+  let startX, endX;
+  function updateBounds(aspect) {
+    const vfovRad = CONFIG.cameraFov * Math.PI / 180;
+    const halfHeight = CONFIG.cameraZ * Math.tan(vfovRad / 2);
+    const halfWidth = halfHeight * aspect;
+    startX = -(halfWidth + CONFIG.entryPadding);
+    endX = halfWidth + CONFIG.exitPadding;
+  }
+
+  // ---- Geometry data ----
+  let tArr = new Float32Array(totalParticles);
+  let randomArr = new Float32Array(totalParticles * 3);
+  let lineParamsArr = new Float32Array(totalParticles * 4);
+  let freqOffsetArr = new Float32Array(totalParticles);
+
+  for (let lineIndex = 0; lineIndex < CONFIG.numLines; lineIndex++) {
+    const lo = (lineIndex - (CONFIG.numLines - 1) / 2) * CONFIG.offsetStep;
+    const ha = 4.0 + Math.abs(lo) * 0.2;
+    const la = 1.0 + Math.abs(lo) * 0.1;
+    const po = lineIndex * 0.15;
+    const fo = lineIndex * 0.01;
+    for (let i = 0; i < CONFIG.particleCount; i++) {
+      const idx = lineIndex * CONFIG.particleCount + i;
+      tArr[idx] = i * spacing;
+      randomArr[idx * 3] = (Math.random() - 0.5) * CONFIG.chaosStrength;
+      randomArr[idx * 3 + 1] = (Math.random() - 0.5) * CONFIG.chaosStrength;
+      randomArr[idx * 3 + 2] = (Math.random() - 0.5) * CONFIG.chaosStrength;
+      lineParamsArr[idx * 4] = lo;
+      lineParamsArr[idx * 4 + 1] = ha;
+      lineParamsArr[idx * 4 + 2] = la;
+      lineParamsArr[idx * 4 + 3] = po;
+      freqOffsetArr[idx] = fo;
+    }
+  }
+
+  // ---- GL resource creation (re-runnable for context restore) ----
+  let program, buffers, attribLoc, uniformLoc;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      throw new Error((type === gl.VERTEX_SHADER ? 'VERT' : 'FRAG') + ': ' + gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+
+  function createGLResources() {
+    const vs = compile(gl.VERTEX_SHADER, vertexShaderSrc);
+    const fs = compile(gl.FRAGMENT_SHADER, fragmentShaderSrc);
+    program = gl.createProgram();
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error('LINK: ' + gl.getProgramInfoLog(program));
+    }
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+
+    attribLoc = {
+      aT: gl.getAttribLocation(program, 'aT'),
+      aRandom: gl.getAttribLocation(program, 'aRandom'),
+      aLineParams: gl.getAttribLocation(program, 'aLineParams'),
+      aFreqOffset: gl.getAttribLocation(program, 'aFreqOffset'),
     };
 
-    // Derived constants
-    const amplitudeSpeed = 4.0 * Math.PI / CONFIG.amplitudePeriod;
-    const yOffset        = -CONFIG.yTilt / 2;
-    const totalParticles = CONFIG.numLines * CONFIG.particleCount;
-    const spacing        = 1.5 / (CONFIG.particleCount - 1);
-    const gradientColors = CONFIG.gradientColors.map(hex => new THREE.Color(hex));
+    const U = (n) => gl.getUniformLocation(program, n);
+    uniformLoc = {
+      modelViewMatrix: U('modelViewMatrix'), projectionMatrix: U('projectionMatrix'),
+      totalTime: U('totalTime'), startX: U('startX'), endX: U('endX'),
+      uBaseFrequency: U('uBaseFrequency'), uAmplitudeSpeed: U('uAmplitudeSpeed'),
+      uYTilt: U('uYTilt'), uYOffset: U('uYOffset'), uZTilt: U('uZTilt'),
+      uBaseSize: U('uBaseSize'), uSizeVariation: U('uSizeVariation'),
+      uStartSpreadFactor: U('uStartSpreadFactor'),
+      uFadeInDist: U('uFadeInDist'), uFadeOutDist: U('uFadeOutDist'),
+      uChaosThreshold: U('uChaosThreshold'), uZChaosDamping: U('uZChaosDamping'),
+      uGradientColors: U('uGradientColors[0]'), uGradientPositions: U('uGradientPositions[0]'),
+      uMouseWorld: U('uMouseWorld'), uMouseActive: U('uMouseActive'),
+      uMouseRadius: U('uMouseRadius'), uMouseStrength: U('uMouseStrength'),
+      uMouseBrighten: U('uMouseBrighten'), uMouseSizeBoost: U('uMouseSizeBoost'),
+      uMouseTrail1: U('uMouseTrail1'), uMouseTrail2: U('uMouseTrail2'), uMouseTrail3: U('uMouseTrail3'),
+      uMouseWakeBright: U('uMouseWakeBright'),
+      uMouseRippleStrength: U('uMouseRippleStrength'), uMouseRippleFreq: U('uMouseRippleFreq'),
+      uMouseRippleSpeed: U('uMouseRippleSpeed'), uMouseRippleRadius: U('uMouseRippleRadius'),
+      uTimeOffset: U('uTimeOffset'),
+    };
 
-    // ========================================
-    // SCENE, CAMERA, RENDERER
-    // ========================================
-    const scene = new THREE.Scene();
-
-    const camera = new THREE.PerspectiveCamera(
-        CONFIG.cameraFov,
-        window.innerWidth / window.innerHeight,
-        CONFIG.cameraNear,
-        CONFIG.cameraFar
-    );
-    camera.position.z = CONFIG.cameraZ;
-
-    let renderer;
-    try {
-        renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
-    } catch (e) {
-        if (DEBUG) console.error('WebGL init failed:', e);
-        throw e;
+    function mkBuf(data, usage) {
+      const b = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, data, usage);
+      return b;
     }
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
-    renderer.setClearColor(0x000000, 0);
-    renderer.autoClearDepth = false;
-    renderer.autoClearStencil = false;
-    renderer.domElement.id = 'geolines-canvas';
-    document.body.appendChild(renderer.domElement);
+    buffers = {
+      aT: mkBuf(tArr, gl.DYNAMIC_DRAW),
+      aRandom: mkBuf(randomArr, gl.DYNAMIC_DRAW),
+      aLineParams: mkBuf(lineParamsArr, gl.STATIC_DRAW),
+      aFreqOffset: mkBuf(freqOffsetArr, gl.STATIC_DRAW),
+    };
 
-    // G3: cached rect — avoids forced layout on every pointermove
-    let canvasRect = renderer.domElement.getBoundingClientRect();
+    // One-time GL state
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    // Premultiplied-alpha NormalBlending (matches Three.js premultipliedAlpha:true)
+    gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.clearColor(0, 0, 0, 0);
 
-    // Context loss handling
-    function onContextLost(event) {
-        event.preventDefault();
-        if (animationId !== null) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
+    // Upload static uniforms
+    gl.useProgram(program);
+    gl.uniformMatrix4fv(uniformLoc.modelViewMatrix, false, modelViewMatrix);
+    gl.uniform1f(uniformLoc.uBaseFrequency, CONFIG.baseFrequency);
+    gl.uniform1f(uniformLoc.uAmplitudeSpeed, amplitudeSpeed);
+    gl.uniform1f(uniformLoc.uYTilt, CONFIG.yTilt);
+    gl.uniform1f(uniformLoc.uYOffset, yOffset);
+    gl.uniform1f(uniformLoc.uZTilt, CONFIG.zTilt);
+    gl.uniform1f(uniformLoc.uBaseSize, CONFIG.baseSize);
+    gl.uniform1f(uniformLoc.uSizeVariation, CONFIG.sizeVariation);
+    gl.uniform1f(uniformLoc.uStartSpreadFactor, CONFIG.startSpreadFactor);
+    gl.uniform1f(uniformLoc.uFadeInDist, CONFIG.fadeInDist);
+    gl.uniform1f(uniformLoc.uFadeOutDist, CONFIG.fadeOutDist);
+    gl.uniform1f(uniformLoc.uChaosThreshold, CONFIG.chaosThreshold);
+    gl.uniform1f(uniformLoc.uZChaosDamping, CONFIG.zChaosDamping);
+    gl.uniform3fv(uniformLoc.uGradientColors, gradientFlat);
+    gl.uniform1fv(uniformLoc.uGradientPositions, new Float32Array(CONFIG.gradientPositions));
+    gl.uniform1f(uniformLoc.uMouseRadius, CONFIG.mouseRadius);
+    gl.uniform1f(uniformLoc.uMouseStrength, CONFIG.mouseStrength);
+    gl.uniform1f(uniformLoc.uMouseBrighten, CONFIG.mouseBrighten);
+    gl.uniform1f(uniformLoc.uMouseSizeBoost, CONFIG.mouseSizeBoost);
+    gl.uniform1f(uniformLoc.uMouseWakeBright, CONFIG.mouseWakeBright);
+    gl.uniform1f(uniformLoc.uMouseRippleStrength, CONFIG.mouseRippleStrength);
+    gl.uniform1f(uniformLoc.uMouseRippleFreq, CONFIG.mouseRippleFreq);
+    gl.uniform1f(uniformLoc.uMouseRippleSpeed, CONFIG.mouseRippleSpeed);
+    gl.uniform1f(uniformLoc.uMouseRippleRadius, CONFIG.mouseRippleRadius);
+    gl.uniform2f(uniformLoc.uMouseWorld, -9999, -9999);
+    gl.uniform2f(uniformLoc.uMouseTrail1, -9999, -9999);
+    gl.uniform2f(uniformLoc.uMouseTrail2, -9999, -9999);
+    gl.uniform2f(uniformLoc.uMouseTrail3, -9999, -9999);
+    gl.uniform1f(uniformLoc.uMouseActive, 0.0);
+    gl.uniform1f(uniformLoc.uTimeOffset, 0.0);
+  }
+
+  function bindAttribs() {
+    function bind(loc, buf, size) {
+      if (loc < 0) return;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
     }
-    function onContextRestored() { animate(); }
-    renderer.domElement.addEventListener('webglcontextlost',     onContextLost);
-    renderer.domElement.addEventListener('webglcontextrestored', onContextRestored);
+    bind(attribLoc.aT, buffers.aT, 1);
+    bind(attribLoc.aRandom, buffers.aRandom, 3);
+    bind(attribLoc.aLineParams, buffers.aLineParams, 4);
+    bind(attribLoc.aFreqOffset, buffers.aFreqOffset, 1);
+  }
 
-    const timer = new THREE.Timer();
-    timer.connect(document);
-    let totalTime   = 0.0;
-    let animationId = null;
-
-    // ========================================
-    // BOUNDS
-    // ========================================
-    let startX, endX;
-    function updateBounds() {
-        const vfovRad    = camera.fov * Math.PI / 180;
-        const dist       = camera.position.z;
-        const halfHeight = dist * Math.tan(vfovRad / 2);
-        const halfWidth  = halfHeight * camera.aspect;
-        startX = -(halfWidth + CONFIG.entryPadding);
-        endX   =   halfWidth + CONFIG.exitPadding;
+  // ---- Sizing ----
+  function setSize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, CONFIG.maxPixelRatio);
+    const w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    const aspect = w / h;
+    rebuildMatrices(aspect);
+    updateBounds(aspect);
+    if (program) {
+      gl.useProgram(program);
+      gl.uniformMatrix4fv(uniformLoc.projectionMatrix, false, projectionMatrix);
+      gl.uniform1f(uniformLoc.startX, startX);
+      gl.uniform1f(uniformLoc.endX, endX);
     }
-    updateBounds();
+  }
 
-    // ========================================
-    // GEOMETRY — PACKED ATTRIBUTES
-    // ========================================
-    const geometry = new THREE.BufferGeometry();
+  // ---- Mouse ----
+  const canvasRectRef = { v: null };
+  let mouseNdcX = 0, mouseNdcY = 0, mouseTargetActive = 0.0, mouseActive = 0.0;
+  let mouseWorldX = -9999, mouseWorldY = -9999;
+  let trail1X = -9999, trail1Y = -9999, trail2X = -9999, trail2Y = -9999, trail3X = -9999, trail3Y = -9999;
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(
-        new Float32Array(totalParticles * 3), 3
-    ));
+  function projectMouseToWorld() {
+    const m = unprojectMatrix;
+    const x = mouseNdcX, y = mouseNdcY, z = 0.5;
+    let px = m[0]*x + m[4]*y + m[8]*z + m[12];
+    let py = m[1]*x + m[5]*y + m[9]*z + m[13];
+    let pz = m[2]*x + m[6]*y + m[10]*z + m[14];
+    let pw = m[3]*x + m[7]*y + m[11]*z + m[15];
+    px /= pw; py /= pw; pz /= pw;
+    let dx = px, dy = py, dz = pz - CONFIG.cameraZ;
+    const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    dx /= len; dy /= len; dz /= len;
+    if (Math.abs(dz) < 0.0001) return;
+    const t = -CONFIG.cameraZ / dz;
+    mouseWorldX = dx * t;
+    mouseWorldY = dy * t;
+  }
 
-    let tArr          = new Float32Array(totalParticles);
-    let randomArr     = new Float32Array(totalParticles * 3);
-    let lineParamsArr = new Float32Array(totalParticles * 4);
-    let freqOffsetArr = new Float32Array(totalParticles);
-
-    for (let lineIndex = 0; lineIndex < CONFIG.numLines; lineIndex++) {
-        const lo = (lineIndex - (CONFIG.numLines - 1) / 2) * CONFIG.offsetStep;
-        const ha = 4.0 + Math.abs(lo) * 0.2;
-        const la = 1.0 + Math.abs(lo) * 0.1;
-        const po = lineIndex * 0.15;
-        const fo = lineIndex * 0.01;
-
-        for (let i = 0; i < CONFIG.particleCount; i++) {
-            const idx = lineIndex * CONFIG.particleCount + i;
-            tArr[idx] = i * spacing;
-            randomArr[idx * 3]     = (Math.random() - 0.5) * CONFIG.chaosStrength;
-            randomArr[idx * 3 + 1] = (Math.random() - 0.5) * CONFIG.chaosStrength;
-            randomArr[idx * 3 + 2] = (Math.random() - 0.5) * CONFIG.chaosStrength;
-            lineParamsArr[idx * 4]     = lo;
-            lineParamsArr[idx * 4 + 1] = ha;
-            lineParamsArr[idx * 4 + 2] = la;
-            lineParamsArr[idx * 4 + 3] = po;
-            freqOffsetArr[idx] = fo;
-        }
+  function onPointerMove(event) {
+    const rect = canvasRectRef.v;
+    if (!rect) return;
+    const px = event.clientX - rect.left;
+    const py = event.clientY - rect.top;
+    if (px >= 0 && px <= rect.width && py >= 0 && py <= rect.height) {
+      mouseNdcX = (px / rect.width) * 2.0 - 1.0;
+      mouseNdcY = (py / rect.height) * -2.0 + 1.0;
+      mouseTargetActive = 1.0;
+    } else {
+      mouseTargetActive = 0.0;
     }
+  }
+  function onPointerLeave() { mouseTargetActive = 0.0; }
 
-    geometry.setAttribute('aT',          new THREE.BufferAttribute(tArr, 1));
-    geometry.setAttribute('aRandom',     new THREE.BufferAttribute(randomArr, 3));
-    geometry.setAttribute('aLineParams', new THREE.BufferAttribute(lineParamsArr, 4));
-    geometry.setAttribute('aFreqOffset', new THREE.BufferAttribute(freqOffsetArr, 1));
+  // ---- Update (wrap detection + reset; GPU does advancement) ----
+  let overIndices = new Uint16Array(CONFIG.particleCount);
+  let timeOffset = 0.0;
 
-    // ========================================
-    // VERTEX SHADER
-    // ========================================
-    const vertexShader = `
-        attribute highp float aT;
-        attribute vec3  aRandom;
-        attribute vec4  aLineParams;
-        attribute float aFreqOffset;
-
-        uniform float totalTime;
-        uniform float startX;
-        uniform float endX;
-        uniform float uBaseFrequency;
-        uniform float uAmplitudeSpeed;
-        uniform float uYTilt;
-        uniform float uYOffset;
-        uniform float uZTilt;
-        uniform float uBaseSize;
-        uniform float uSizeVariation;
-        uniform float uStartSpreadFactor;
-        uniform float uFadeInDist;
-        uniform float uFadeOutDist;
-        uniform float uChaosThreshold;
-        uniform float uZChaosDamping;
-        uniform vec3  uGradientColors[5];
-        uniform float uGradientPositions[5];
-        uniform vec2  uMouseWorld;
-        uniform float uMouseActive;
-        uniform float uMouseRadius;
-        uniform float uMouseStrength;
-        uniform float uMouseBrighten;
-        uniform float uMouseSizeBoost;
-        uniform vec2  uMouseTrail1;
-        uniform vec2  uMouseTrail2;
-        uniform vec2  uMouseTrail3;
-        uniform float uMouseWakeBright;
-        uniform float uMouseRippleStrength;
-        uniform float uMouseRippleFreq;
-        uniform float uMouseRippleSpeed;
-        uniform float uMouseRippleRadius;
-        uniform highp float uTimeOffset;
-
-        varying vec3  vColor;
-        varying float vAlpha;
-
-        vec3 mod289_v3(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-        vec2 mod289_v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-        vec3 permute(vec3 x)   { return mod289_v3((x * 34.0 + 1.0) * x); }
-
-        float snoise(vec2 v) {
-            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-            vec2 i  = floor(v + dot(v, C.yy));
-            vec2 x0 = v - i + dot(i, C.xx);
-            vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-            vec4 x12 = x0.xyxy + C.xxzz;
-            x12.xy -= i1;
-            i = mod289_v2(i);
-            vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
-            vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
-            m = m * m; m = m * m;
-            vec3 xg = 2.0 * fract(p * C.www) - 1.0;
-            vec3 h  = abs(xg) - 0.5;
-            vec3 ox = floor(xg + 0.5);
-            vec3 a0 = xg - ox;
-            m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
-            vec3 g;
-            g.x  = a0.x * x0.x   + h.x * x0.y;
-            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-            return 130.0 * dot(m, g);
+  function update() {
+    const pc = CONFIG.particleCount, nl = CONFIG.numLines, cs = CONFIG.chaosStrength;
+    let anyReset = false;
+    for (let lineIndex = 0; lineIndex < nl; lineIndex++) {
+      const base = lineIndex * pc;
+      let overCount = 0;
+      let currentMin = Infinity;
+      for (let i = 0; i < pc; i++) {
+        const eff = tArr[base + i] + timeOffset;
+        if (eff > 1.0) overIndices[overCount++] = i;
+        else if (eff < currentMin) currentMin = eff;
+      }
+      if (overCount > 0) {
+        anyReset = true;
+        if (currentMin === Infinity) currentMin = 0;
+        for (let k = 0; k < overCount; k++) {
+          const pi = base + overIndices[k];
+          const ri = pi * 3;
+          tArr[pi] = (currentMin - (k + 1) * spacing) - timeOffset;
+          randomArr[ri] = (Math.random() - 0.5) * cs;
+          randomArr[ri + 1] = (Math.random() - 0.5) * cs;
+          randomArr[ri + 2] = (Math.random() - 0.5) * cs;
         }
+      }
+    }
+    if (anyReset) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.aT);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, tArr);
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.aRandom);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, randomArr);
+    }
+  }
 
-        void main() {
-            highp float t = aT + uTimeOffset;
-            float clampedT = clamp(t, 0.0, 1.0);
+  // ---- Timing (replaces THREE.Timer) ----
+  let totalTime = 0.0;
+  let lastTime = null;
+  let animationId = null;
 
-            float aLineOffset  = aLineParams.x;
-            float aHighAmp     = aLineParams.y;
-            float aLowAmp      = aLineParams.z;
-            float aPhaseOffset = aLineParams.w;
+  function getDelta(timestamp) {
+    if (lastTime === null) { lastTime = timestamp; return 0; }
+    let d = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+    return d;
+  }
+  function onVisibility() { if (document.hidden) lastTime = null; }
 
-            float amplitude = aLowAmp + (aHighAmp - aLowAmp)
-                * (0.5 + 0.5 * sin(totalTime * uAmplitudeSpeed + aPhaseOffset));
-            float freq = uBaseFrequency + aFreqOffset;
-            float x = startX + t * (endX - startX);
+  function animate(timestamp) {
+    animationId = requestAnimationFrame(animate);
+    if (timestamp === undefined) return; // first manual call: wait for rAF timestamp
+    const rawDelta = getDelta(timestamp);
+    const delta = Math.min(rawDelta, CONFIG.maxDelta);
 
-            const float PI     = 3.14159265;
-            const float TWO_PI = 6.28318530;
-            float spread = 1.5 * sin(PI * t);
-            float wave = amplitude * (
-                sin(TWO_PI * freq * t)
-              + 0.5 * sin(4.0 * PI * freq * t)
-              + 0.25 * sin(6.0 * PI * freq * t)
-            );
-            wave *= sin(PI * t);
+    totalTime = (totalTime + delta) % CONFIG.TIME_WRAP;
 
-            float y = wave
-                + aLineOffset * (spread * 0.8 + (1.0 - t) * uStartSpreadFactor)
-                + t * uYTilt + uYOffset;
-
-            float z = aLineOffset * spread * 1.3 * cos(PI * t + aPhaseOffset)
-                + t * uZTilt * 0.2
-                + sin(t * PI * 5.0 + aPhaseOffset) * 0.5;
-
-            if (t < uChaosThreshold) {
-                float chaosAmount = 1.0 - t / uChaosThreshold;
-                x += aRandom.x * chaosAmount;
-                y += aRandom.y * chaosAmount;
-                z += aRandom.z * chaosAmount * uZChaosDamping;
-                float noiseStrength = chaosAmount * 0.1;
-                y += snoise(vec2(t * 10.0, totalTime * 0.9 + aLineOffset)) * noiseStrength * 1.7;
-            }
-
-            vec3 particleColor = uGradientColors[0];
-            if (clampedT >= uGradientPositions[0]) {
-                for (int j = 0; j < 4; j++) {
-                    if (clampedT >= uGradientPositions[j] && clampedT <= uGradientPositions[j + 1]) {
-                        float factor = (clampedT - uGradientPositions[j])
-                                     / (uGradientPositions[j + 1] - uGradientPositions[j]);
-                        particleColor = mix(uGradientColors[j], uGradientColors[j + 1], factor);
-                        break;
-                    }
-                }
-            }
-
-            float alpha = clamp(t / uFadeInDist, 0.0, 1.0)
-                        * clamp((1.0 - t) / uFadeOutDist, 0.0, 1.0)
-                        * 0.475;
-
-            float sizeWave = abs(wave / max(amplitude, 0.001));
-            float particleSize = uBaseSize + uSizeVariation * sizeWave;
-
-            // Mouse interaction — guarded: uniform branch = zero divergence, skips entirely when inactive
-            if (uMouseActive > 0.001) {
-                vec2 toParticle = vec2(x, y) - uMouseWorld;
-                float mouseDist = max(length(toParticle), 0.001);
-                float mouseInfluence = (1.0 - smoothstep(0.0, uMouseRadius, mouseDist)) * uMouseActive;
-
-                float repulseInfluence = mouseInfluence * mouseInfluence;
-                vec2 pushDir = toParticle / mouseDist;
-                x += pushDir.x * repulseInfluence * uMouseStrength;
-                y += pushDir.y * repulseInfluence * uMouseStrength;
-
-                float wake1 = (1.0 - smoothstep(0.0, uMouseRadius * 1.3, length(vec2(x, y) - uMouseTrail1))) * uMouseActive;
-                float wake2 = (1.0 - smoothstep(0.0, uMouseRadius * 1.1, length(vec2(x, y) - uMouseTrail2))) * uMouseActive;
-                float wake3 = (1.0 - smoothstep(0.0, uMouseRadius * 0.9, length(vec2(x, y) - uMouseTrail3))) * uMouseActive;
-                float wakeInfluence = (wake1 * 0.55 + wake2 * 0.3 + wake3 * 0.15) * uMouseWakeBright;
-
-                float brighten = max(mouseInfluence * uMouseBrighten, wakeInfluence);
-                particleColor = mix(particleColor, vec3(1.0), brighten);
-                particleSize *= 1.0 + mouseInfluence * uMouseSizeBoost;
-                alpha = mix(alpha, 1.0, max(mouseInfluence, wakeInfluence));
-
-                // Ripple — soft trailing undulation from wake position
-                float rippleDist = length(vec2(x, y) - mix(uMouseTrail2, uMouseWorld, 0.3));
-                float rippleFade = 1.0 - smoothstep(0.0, uMouseRippleRadius, rippleDist);
-                float ripplePhase = rippleDist * uMouseRippleFreq - totalTime * uMouseRippleSpeed;
-                y += sin(ripplePhase) * rippleFade * uMouseRippleStrength;
-            }
-
-            vColor = particleColor;
-            vAlpha = alpha;
-            vec4 mvPosition = modelViewMatrix * vec4(x, y, z, 1.0);
-            gl_PointSize = particleSize * (300.0 / -mvPosition.z);
-            gl_Position  = projectionMatrix * mvPosition;
-        }
-    `;
-
-    // ========================================
-    // FRAGMENT SHADER
-    // ========================================
-    const fragmentShader = `
-        varying vec3  vColor;
-        varying float vAlpha;
-        void main() {
-            gl_FragColor = vec4(vColor, vAlpha);
-        }
-    `;
-
-    // ========================================
-    // MATERIAL
-    // ========================================
-    const material = new THREE.ShaderMaterial({
-        precision: 'mediump',
-        uniforms: {
-            totalTime:          { value: 0.0 },
-            startX:             { value: startX },
-            endX:               { value: endX },
-            uBaseFrequency:     { value: CONFIG.baseFrequency },
-            uAmplitudeSpeed:    { value: amplitudeSpeed },
-            uYTilt:             { value: CONFIG.yTilt },
-            uYOffset:           { value: yOffset },
-            uZTilt:             { value: CONFIG.zTilt },
-            uBaseSize:          { value: CONFIG.baseSize },
-            uSizeVariation:     { value: CONFIG.sizeVariation },
-            uStartSpreadFactor: { value: CONFIG.startSpreadFactor },
-            uFadeInDist:        { value: CONFIG.fadeInDist },
-            uFadeOutDist:       { value: CONFIG.fadeOutDist },
-            uChaosThreshold:    { value: CONFIG.chaosThreshold },
-            uZChaosDamping:     { value: CONFIG.zChaosDamping },
-            uGradientColors:    { value: gradientColors },
-            uGradientPositions: { value: CONFIG.gradientPositions },
-            uMouseWorld:        { value: new THREE.Vector2(-9999, -9999) },
-            uMouseActive:       { value: 0.0 },
-            uMouseRadius:       { value: CONFIG.mouseRadius },
-            uMouseStrength:     { value: CONFIG.mouseStrength },
-            uMouseBrighten:     { value: CONFIG.mouseBrighten },
-            uMouseSizeBoost:    { value: CONFIG.mouseSizeBoost },
-            uMouseTrail1:       { value: new THREE.Vector2(-9999, -9999) },
-            uMouseTrail2:       { value: new THREE.Vector2(-9999, -9999) },
-            uMouseTrail3:       { value: new THREE.Vector2(-9999, -9999) },
-            uMouseWakeBright:   { value: CONFIG.mouseWakeBright },
-            uMouseRippleStrength: { value: CONFIG.mouseRippleStrength },
-            uMouseRippleFreq:   { value: CONFIG.mouseRippleFreq },
-            uMouseRippleSpeed:  { value: CONFIG.mouseRippleSpeed },
-            uMouseRippleRadius: { value: CONFIG.mouseRippleRadius },
-            uTimeOffset:        { value: 0.0 }
-        },
-        vertexShader,
-        fragmentShader,
-        transparent: true,
-        blending:    THREE.NormalBlending,
-        depthTest:   false,
-        depthWrite:  false
-    });
-
-    // ========================================
-    // POINTS MESH
-    // ========================================
-    const particles = new THREE.Points(geometry, material);
-    particles.frustumCulled = false;
-    scene.add(particles);
-
-    // ========================================
-    // MOUSE INTERACTION
-    // ========================================
-    const _mouseProj = new THREE.Vector3();
-    let mouseNdcX         = 0;
-    let mouseNdcY         = 0;
-    let mouseOverCanvas   = false;
-    let mouseTargetActive = 0.0;
-    let mouseActive       = 0.0;
-    let trail1X = -9999, trail1Y = -9999;
-    let trail2X = -9999, trail2Y = -9999;
-    let trail3X = -9999, trail3Y = -9999;
-
-    function projectMouseToWorld() {
-        _mouseProj.set(mouseNdcX, mouseNdcY, 0.5).unproject(camera);
-        _mouseProj.sub(camera.position).normalize();
-        const d = _mouseProj.z;
-        if (Math.abs(d) < 0.0001) return;
-        const t = -camera.position.z / d;
-        material.uniforms.uMouseWorld.value.set(
-            camera.position.x + _mouseProj.x * t,
-            camera.position.y + _mouseProj.y * t
-        );
+    timeOffset += CONFIG.speed * delta;
+    if (timeOffset > 5.0) {
+      for (let i = 0; i < totalParticles; i++) tArr[i] += timeOffset;
+      timeOffset = 0.0;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.aT);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, tArr);
     }
 
-    function onPointerMove(event) {
-        const px = event.clientX - canvasRect.left;
-        const py = event.clientY - canvasRect.top;
-        if (px >= 0 && px <= canvasRect.width && py >= 0 && py <= canvasRect.height) {
-            mouseNdcX = (px / canvasRect.width)  *  2.0 - 1.0;
-            mouseNdcY = (py / canvasRect.height) * -2.0 + 1.0;
-            mouseOverCanvas   = true;
-            mouseTargetActive = 1.0;
-        } else {
-            mouseOverCanvas   = false;
-            mouseTargetActive = 0.0;
-        }
-    }
-    function onPointerLeave() {
-        mouseOverCanvas   = false;
-        mouseTargetActive = 0.0;
-    }
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    const prevActive = mouseActive;
+    mouseActive += (mouseTargetActive - mouseActive) * Math.min(delta * CONFIG.mouseFadeSpeed, 1.0);
+    if (mouseActive > 0.001) projectMouseToWorld();
 
-    // ========================================
-    // CPU UPDATE — wrap detection + reset only.
-    // Linear t advancement handled by uTimeOffset
-    // uniform on GPU (eliminates per-frame buffer upload).
-    // ========================================
-    let overIndices = new Uint16Array(CONFIG.particleCount);
-    let overCount   = 0;
-    let timeOffset  = 0.0;
-
-    function update() {
-        const pc = CONFIG.particleCount;
-        const nl = CONFIG.numLines;
-        const cs = CONFIG.chaosStrength;
-        let anyReset = false;
-
-        for (let lineIndex = 0; lineIndex < nl; lineIndex++) {
-            const base = lineIndex * pc;
-
-            overCount = 0;
-            let currentMin = Infinity;
-            for (let i = 0; i < pc; i++) {
-                const effectiveT = tArr[base + i] + timeOffset;
-                if (effectiveT > 1.0) {
-                    overIndices[overCount++] = i;
-                } else if (effectiveT < currentMin) {
-                    currentMin = effectiveT;
-                }
-            }
-
-            if (overCount > 0) {
-                anyReset = true;
-                if (currentMin === Infinity) currentMin = 0;
-                for (let k = 0; k < overCount; k++) {
-                    const pi = base + overIndices[k];
-                    const ri = pi * 3;
-                    // Store in baseT space: desired effective t minus current offset
-                    tArr[pi]          = (currentMin - (k + 1) * spacing) - timeOffset;
-                    randomArr[ri]     = (Math.random() - 0.5) * cs;
-                    randomArr[ri + 1] = (Math.random() - 0.5) * cs;
-                    randomArr[ri + 2] = (Math.random() - 0.5) * cs;
-                }
-            }
-        }
-        // Upload only when particles actually reset (not every frame)
-        if (anyReset) {
-            geometry.attributes.aT.needsUpdate = true;
-            geometry.attributes.aRandom.needsUpdate = true;
-        }
+    if (mouseActive > 0.001) {
+      const mwx = mouseWorldX, mwy = mouseWorldY;
+      if (prevActive < 0.01 && mouseActive >= 0.01) {
+        trail1X = mwx; trail1Y = mwy; trail2X = mwx; trail2Y = mwy; trail3X = mwx; trail3Y = mwy;
+      }
+      const ws = CONFIG.mouseWakeSpeed;
+      const t1 = Math.min(delta * ws, 1.0);
+      const t2 = Math.min(delta * ws * 0.55, 1.0);
+      const t3 = Math.min(delta * ws * 0.35, 1.0);
+      trail1X += (mwx - trail1X) * t1; trail1Y += (mwy - trail1Y) * t1;
+      trail2X += (trail1X - trail2X) * t2; trail2Y += (trail1Y - trail2Y) * t2;
+      trail3X += (trail2X - trail3X) * t3; trail3Y += (trail2Y - trail3Y) * t3;
     }
 
     update();
 
-    // ========================================
-    // ANIMATION LOOP
-    // ========================================
-    function animate(timestamp) {
-        animationId = requestAnimationFrame(animate);
-        timer.update(timestamp);
-        const rawDelta = timer.getDelta();
-        const delta    = Math.min(rawDelta, CONFIG.maxDelta);
+    // Connection lines (separate 2D canvas) — called before the WebGL draw to match prior ordering
+    if (window._drawConnectionLines) window._drawConnectionLines(delta);
 
-        totalTime = (totalTime + delta) % CONFIG.TIME_WRAP;
-        material.uniforms.totalTime.value = totalTime;
-
-        // Advance t offset (GPU computes t = baseT + offset)
-        timeOffset += CONFIG.speed * delta;
-        material.uniforms.uTimeOffset.value = timeOffset;
-
-        // Periodic rebase: fold offset back into baseT for mediump precision
-        if (timeOffset > 5.0) {
-            for (let i = 0; i < totalParticles; i++) tArr[i] += timeOffset;
-            timeOffset = 0.0;
-            material.uniforms.uTimeOffset.value = 0.0;
-            geometry.attributes.aT.needsUpdate = true;
-        }
-
-        const prevActive = mouseActive;
-        mouseActive += (mouseTargetActive - mouseActive) * Math.min(delta * CONFIG.mouseFadeSpeed, 1.0);
-        material.uniforms.uMouseActive.value = mouseActive;
-        if (mouseActive > 0.001) projectMouseToWorld();
-
-        if (mouseActive > 0.001) {
-            const mwx = material.uniforms.uMouseWorld.value.x;
-            const mwy = material.uniforms.uMouseWorld.value.y;
-            if (prevActive < 0.01 && mouseActive >= 0.01) {
-                trail1X = mwx; trail1Y = mwy;
-                trail2X = mwx; trail2Y = mwy;
-                trail3X = mwx; trail3Y = mwy;
-            }
-            const ws = CONFIG.mouseWakeSpeed;
-            const t1 = Math.min(delta * ws, 1.0);
-            const t2 = Math.min(delta * ws * 0.55, 1.0);
-            const t3 = Math.min(delta * ws * 0.35, 1.0);
-            trail1X += (mwx     - trail1X) * t1;
-            trail1Y += (mwy     - trail1Y) * t1;
-            trail2X += (trail1X - trail2X) * t2;
-            trail2Y += (trail1Y - trail2Y) * t2;
-            trail3X += (trail2X - trail3X) * t3;
-            trail3Y += (trail2Y - trail3Y) * t3;
-            material.uniforms.uMouseTrail1.value.set(trail1X, trail1Y);
-            material.uniforms.uMouseTrail2.value.set(trail2X, trail2Y);
-            material.uniforms.uMouseTrail3.value.set(trail3X, trail3Y);
-        }
-
-        update();
-        if (window._drawConnectionLines) window._drawConnectionLines(delta);
-        renderer.render(scene, camera);
+    // Render
+    gl.useProgram(program);
+    bindAttribs();
+    gl.uniform1f(uniformLoc.totalTime, totalTime);
+    gl.uniform1f(uniformLoc.uTimeOffset, timeOffset);
+    gl.uniform1f(uniformLoc.uMouseActive, mouseActive);
+    if (mouseActive > 0.001) {
+      gl.uniform2f(uniformLoc.uMouseWorld, mouseWorldX, mouseWorldY);
+      gl.uniform2f(uniformLoc.uMouseTrail1, trail1X, trail1Y);
+      gl.uniform2f(uniformLoc.uMouseTrail2, trail2X, trail2Y);
+      gl.uniform2f(uniformLoc.uMouseTrail3, trail3X, trail3Y);
     }
 
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, totalParticles);
+  }
+
+  // ---- Context loss ----
+  function onContextLost(e) {
+    e.preventDefault();
+    if (animationId !== null) { cancelAnimationFrame(animationId); animationId = null; }
+  }
+  function onContextRestored() {
+    createGLResources();
+    setSize();
+    lastTime = null;
     animate();
+  }
+  canvas.addEventListener('webglcontextlost', onContextLost);
+  canvas.addEventListener('webglcontextrestored', onContextRestored);
 
-    // ========================================
-    // RESIZE — debounced
-    // ========================================
-    let resizeTimer = null;
-    function executeResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
-        updateBounds();
-        material.uniforms.startX.value = startX;
-        material.uniforms.endX.value   = endX;
-        canvasRect = renderer.domElement.getBoundingClientRect();
-    }
-    function onResize() {
-        if (resizeTimer !== null) clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(executeResize, CONFIG.resizeDebounceMs);
-    }
+  // ---- Resize ----
+  let resizeTimer = null;
+  function onResize() {
+    if (resizeTimer !== null) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      setSize();
+      canvasRectRef.v = canvas.getBoundingClientRect();
+    }, CONFIG.resizeDebounceMs);
+  }
+
+  // ---- Public API ----
+  function start() {
+    createGLResources();
+    setSize();
+    canvasRectRef.v = canvas.getBoundingClientRect();
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.documentElement.addEventListener('pointerleave', onPointerLeave);
     window.addEventListener('resize', onResize);
+    document.addEventListener('visibilitychange', onVisibility);
+    animate();
+  }
 
-    // ========================================
-    // DISPOSE
-    // ========================================
-    function dispose() {
-        if (animationId !== null) { cancelAnimationFrame(animationId); animationId = null; }
-        if (resizeTimer !== null) { clearTimeout(resizeTimer); resizeTimer = null; }
-        scene.remove(particles);
-        geometry.dispose();
-        material.dispose();
-        renderer.dispose();
-        timer.disconnect();
-        timer.dispose();
-        if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
-        window.removeEventListener('resize', onResize);
-        window.removeEventListener('pointermove', onPointerMove);
-        document.documentElement.removeEventListener('pointerleave', onPointerLeave);
-        renderer.domElement.removeEventListener('webglcontextlost',     onContextLost);
-        renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored);
-        tArr = null; randomArr = null; lineParamsArr = null; freqOffsetArr = null;
-        overIndices = null;
-        if (DEBUG) console.log('Geolines V1 disposed');
-    }
+  function dispose() {
+    if (animationId !== null) { cancelAnimationFrame(animationId); animationId = null; }
+    if (resizeTimer !== null) { clearTimeout(resizeTimer); resizeTimer = null; }
+    window.removeEventListener('pointermove', onPointerMove);
+    document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+    window.removeEventListener('resize', onResize);
+    document.removeEventListener('visibilitychange', onVisibility);
+    canvas.removeEventListener('webglcontextlost', onContextLost);
+    canvas.removeEventListener('webglcontextrestored', onContextRestored);
+    if (program) gl.deleteProgram(program);
+    if (buffers) Object.values(buffers).forEach(b => gl.deleteBuffer(b));
+    const ext = gl.getExtension('WEBGL_lose_context');
+    if (ext) ext.loseContext();
+    if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+    tArr = randomArr = lineParamsArr = freqOffsetArr = overIndices = null;
+  }
 
-    window.geolinesDispose = dispose;
+  return { start, dispose, canvas, _config: CONFIG };
+}
+
+    const _geolines = createGeolinesRaw({ colorMode: 'linear' });
+    _geolines.start();
+    window.geolinesDispose = _geolines.dispose;
 
     </script>
 
@@ -1873,7 +1938,7 @@
 
     function resizeCanvas() {
       if (!canvas || !canvasSection) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvasCssW = canvasSection.offsetWidth;
       canvasCssH = canvasSection.offsetHeight;
       canvas.width = canvasCssW * dpr;
