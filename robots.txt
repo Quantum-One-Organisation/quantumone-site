@@ -1,4 +1,69 @@
+# QuantumOne — robots.txt
+# Posture: allow everything. 
+# Verified June 2026 against vendor + consolidated crawler references.
+
+# ---- Default: everyone allowed ----
 User-agent: *
 Allow: /
- 
+
+# ---- OpenAI ----
+User-agent: OAI-SearchBot      # ChatGPT search index + citations
+Allow: /
+User-agent: ChatGPT-User       # live fetch on a user prompt / GPT Actions
+Allow: /
+User-agent: GPTBot             # foundation-model training
+Allow: /
+
+# ---- Anthropic ----
+User-agent: Claude-SearchBot   # Claude search/retrieval + citations
+Allow: /
+User-agent: Claude-User        # live fetch on a user prompt
+Allow: /
+User-agent: ClaudeBot          # training
+Allow: /
+User-agent: anthropic-ai       # legacy training token
+Allow: /
+
+# ---- Google ----
+User-agent: Google-Extended    # Gemini training + grounding 
+Allow: /
+User-agent: GoogleOther
+Allow: /
+
+# ---- Microsoft ----
+User-agent: bingbot
+Allow: /
+
+# ---- Perplexity ----
+User-agent: PerplexityBot      # Perplexity answer index + citations
+Allow: /
+User-agent: Perplexity-User    # live fetch on a user prompt
+Allow: /
+
+# ---- Meta ----
+User-agent: meta-externalagent # Meta AI indexing + training
+Allow: /
+User-agent: Meta-WebIndexer    # Meta AI search citations/links
+Allow: /
+User-agent: FacebookBot        # link previews / older crawler
+Allow: /
+
+# ---- Apple ----
+User-agent: Applebot           # Siri / Spotlight / Apple search
+Allow: /
+User-agent: Applebot-Extended  # Apple foundation-model training
+Allow: /
+
+# ---- Amazon ----
+User-agent: Amazonbot
+Allow: /
+
+# ---- DuckDuckGo AI ----
+User-agent: DuckAssistBot
+Allow: /
+
+# ---- Common Crawl (used as a dataset by many LLMs) ----
+User-agent: CCBot
+Allow: /
+
 Sitemap: https://www.quantumone.app/sitemap.xml
