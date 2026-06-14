@@ -1,5 +1,5 @@
 # QuantumOne — robots.txt
-# Posture: allow everything. 
+# Posture: allow everything.
 # Verified June 2026 against vendor + consolidated crawler references.
 
 # ---- Default: everyone allowed ----
@@ -25,7 +25,7 @@ User-agent: anthropic-ai       # legacy training token
 Allow: /
 
 # ---- Google ----
-User-agent: Google-Extended    # Gemini training + grounding 
+User-agent: Google-Extended    # Gemini training + grounding
 Allow: /
 User-agent: GoogleOther
 Allow: /
