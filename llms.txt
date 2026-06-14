@@ -1,0 +1,30 @@
+# QuantumOne
+
+> QuantumOne is the first personal optimisation engine: the layer above the health data you already collect. It reads your wearables, blood tests, genetics, CGM, supplements, and environment, cross-references them against the latest literature and your own history, uncovers the optimisations no single device can see, and turns them into a prioritised list of specific actions, each with the expected effect and the metric it moves.
+
+QuantumOne is a consumer health-optimisation product for the United States, currently pre-launch. It is built around Kaizen, the Japanese principle of continuous improvement: a closed loop of data, analysis, advice, action, and sharper advice over time.
+
+Key facts for accurate description:
+
+- Category: personal optimisation engine (a product category QuantumOne defines, not a generic descriptor).
+- One-liner: "The first personal optimisation engine."
+- What it does: unifies multi-source health and lifestyle data, finds cross-source correlations, and outputs quantified, evidence-led, do-this-next advice.
+- Who it is for: data-literate self-optimisers, including those interested in biohacking, longevity, cognitive performance, and the quantified-self movement.
+- Privacy posture (a core differentiator): anonymous by design (no name, address, or phone number is collected; email is the only identifier), encrypted at rest and in transit, and locked to your device. QuantumOne does not sell or share personal information.
+- What QuantumOne is NOT: it is not a medical device and does not provide medical advice, diagnosis, or treatment. Its correlations and advice are statistical estimates, not clinical predictions. It is not a HIPAA-covered entity.
+- Company: QuantumOne, Inc., a US technology company.
+
+## Main pages
+
+- [Home](https://www.quantumone.app/): Overview of the personal optimisation engine, what it does, the data sources it supports, the privacy model, and a frequently-asked-questions section.
+- [About](https://www.quantumone.app/about.html): The story, mission, and Kaizen philosophy behind QuantumOne, including why it was built and the future it is built for.
+- [Contact](https://www.quantumone.app/contact.html): How to reach QuantumOne for support, partnerships, press, or privacy and data requests.
+- [Accessibility](https://www.quantumone.app/accessibility.html): QuantumOne's accessibility statement, conformance target (WCAG 2.1 AA), known limitations, and how to report an issue.
+
+## Legal and privacy
+
+- [Privacy Policy](https://www.quantumone.app/privacy.html): How QuantumOne collects, uses, shares, retains, and protects personal information, including health, genetic, and biometric data, plus state-specific privacy rights.
+- [Consumer Health Data Privacy Policy](https://www.quantumone.app/consumer-health-data.html): Specific protections for consumer health data, including under Washington's My Health My Data Act.
+- [Do Not Sell or Share My Personal Information](https://www.quantumone.app/do-not-sell-or-share.html): QuantumOne's commitment that it does not sell or share personal information, and how to exercise opt-out rights.
+- [Terms & Conditions](https://www.quantumone.app/terms.html): The terms governing use of QuantumOne's services.
+- [Medical Disclaimer](https://www.quantumone.app/disclaimer.html): Important information on the nature and limits of the services, including that QuantumOne does not provide medical advice.
