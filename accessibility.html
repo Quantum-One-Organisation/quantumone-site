@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessibility Statement — QuantumOne</title>
+  <meta name="description" content="QuantumOne's Accessibility Statement — our commitment to accessible design, our conformance target, known limitations, and how to report an accessibility issue." />
+  <link rel="canonical" href="https://www.quantumone.app/accessibility.html" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600;700&display=swap" /></noscript>
+
+  <style>
+    :root {
+      --bg-deep: #06040d;
+      --text-primary: #e2dee9;
+      --text-secondary: #9a93b0;
+      --text-muted: #5a5475;
+      --accent-purple: #9333ea;
+      --accent-yellow-muted: #AFAC79;
+      --grad-a: #5539C6;
+      --grad-b: #B936CE;
+      --lav: rgb(199, 181, 253);
+      --border-glow: rgba(120, 60, 220, 0.18);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.7;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(85, 57, 198, 0.08) 0%, transparent 60%);
+      z-index: 0; pointer-events: none;
+    }
+    .top { position: relative; z-index: 1; text-align: center; padding: 34px 16px 0; }
+    .top img { height: 30px; width: auto; opacity: 0.95; }
+
+    .doc {
+      position: relative; z-index: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 0;
+    }
+    h1 { font-size: clamp(28px, 5vw, 38px); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .dates { font-size: 13.5px; color: var(--text-muted); margin-bottom: 36px; }
+    .dates b { color: var(--text-secondary); font-weight: 600; }
+    h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); margin: 36px 0 12px; }
+    p { font-size: 15.5px; font-weight: 300; color: var(--text-secondary); margin-bottom: 14px; }
+    p b, li b { color: var(--text-primary); font-weight: 400; }
+    a { color: var(--accent-yellow-muted); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { list-style: none; margin: 0 0 14px; padding: 0; }
+    li { position: relative; padding-left: 20px; font-size: 15.5px; font-weight: 300; color: var(--text-secondary); margin-bottom: 9px; }
+    li::before { content: ''; position: absolute; left: 2px; top: 10px; width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(120deg, var(--grad-a), var(--grad-b)); }
+    .intro { font-size: 16.5px; font-weight: 300; color: var(--text-primary); line-height: 1.7; }
+
+    .footer { position: relative; z-index: 1; padding: 56px 24px 48px; margin-top: 56px; }
+    .footer-cols {
+      max-width: 760px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.5fr 1fr 1.4fr; gap: 32px 40px;
+      padding-bottom: 32px; border-bottom: 1px solid rgba(120, 60, 220, 0.12); text-align: left;
+    }
+    .footer-brand { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .footer-logo { height: 26px; width: auto; opacity: 0.95; }
+    .footer-tagline { font-size: 12px; font-weight: 300; color: var(--text-muted); line-height: 1.5; }
+    .footer-social { display: inline-flex; align-items: center; gap: 7px; color: #7d7896; text-decoration: none; font-size: 12px; letter-spacing: 0.3px; transition: color 0.2s ease; margin-top: 2px; }
+    .footer-social:hover { color: var(--text-secondary); }
+    .footer-social svg { width: 13px; height: 13px; fill: currentColor; }
+    .footer-col { display: flex; flex-direction: column; gap: 9px; }
+    .footer-col-h { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px; }
+    .footer-col a { font-size: 12.5px; font-weight: 300; color: var(--accent-yellow-muted); text-decoration: none; transition: opacity 0.18s ease; }
+    .footer-col a:hover { opacity: 0.72; }
+    .footer-disclaimer { font-size: 10px; color: #857f99; line-height: 1.7; max-width: 640px; margin: 28px auto 0; padding: 0 16px; text-align: center; }
+    @media (max-width: 760px) {
+      .footer { padding: 48px 18px 48px; }
+      .footer-cols { grid-template-columns: 1fr 1fr; gap: 28px 24px; }
+      .footer-brand { grid-column: 1 / -1; align-items: center; text-align: center; }
+      .footer-social { align-self: center; }
+    }
+    @media (max-width: 520px) {
+      .footer-cols { grid-template-columns: 1fr; gap: 26px; }
+      .footer-col { align-items: center; text-align: center; }
+    }
+
+    @media (max-width: 520px) { .doc { padding: 36px 18px 0; } }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <a href="https://www.quantumone.app"><img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" /></a>
+  </div>
+
+  <main class="doc">
+    <h1>Accessibility Statement</h1>
+    <p class="dates"><b>Effective Date:</b> June 14, 2026 &nbsp;·&nbsp; <b>Last Updated:</b> June 14, 2026</p>
+
+    <p class="intro">QuantumOne is committed to making our website and services usable by as many people as possible, including people who rely on assistive technologies. Accessibility is an ongoing effort, and we treat it the way we treat the rest of the product: as something to continuously improve.</p>
+
+    <h2>Our conformance target</h2>
+    <p>We aim to conform to the <b><a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener">Web Content Accessibility Guidelines (WCAG) 2.1, Level AA</a></b>. These guidelines, published by the <a href="https://www.w3.org/" target="_blank" rel="noopener">World Wide Web Consortium (W3C)</a>, explain how to make web content more accessible to people with a wide range of disabilities, including visual, auditory, motor, and cognitive disabilities.</p>
+    <p>QuantumOne is <b>partially conformant</b> with WCAG 2.1 AA. "Partially conformant" means that some parts of the content do not yet fully meet the standard. We are actively working toward full conformance and review accessibility as the site evolves.</p>
+    <p>This same standard guided how we built the QuantumOne application. The app was designed to meet <b>WCAG 2.1 Level AA at minimum, and Level AAA where practical</b> — for example in colour contrast and text legibility. As with the website, this was assessed by our own team using manual testing, online evaluation tools, and contrast checkers rather than a formal third-party audit, so we describe it as a design target we hold ourselves to rather than a certified result.</p>
+
+    <h2>What we have done</h2>
+    <p>Accessibility features currently built into the QuantumOne website include:</p>
+    <ul>
+      <li><b>Semantic structure.</b> Pages use semantic HTML landmarks and a logical heading order so that screen readers can navigate content predictably.</li>
+      <li><b>Text alternatives.</b> Meaningful images include descriptive alternative (alt) text, and decorative elements are hidden from assistive technologies.</li>
+      <li><b>Keyboard navigation.</b> Interactive elements (links, form fields, buttons) are reachable and operable with a keyboard, with visible focus indicators.</li>
+      <li><b>Labelled controls.</b> Form inputs and interactive controls carry accessible labels so their purpose is clear to assistive technologies.</li>
+      <li><b>Reduced motion.</b> Animated and moving elements respect the operating-system "reduce motion" preference, and are minimised or stopped for users who enable it.</li>
+      <li><b>Colour and contrast.</b> We design text and interface colours with readability in mind and review contrast against the WCAG AA thresholds.</li>
+      <li><b>Responsive layout.</b> Content reflows for different screen sizes and supports browser zoom and text resizing without loss of functionality.</li>
+      <li><b>Language declaration.</b> Each page declares its language so screen readers pronounce content correctly.</li>
+    </ul>
+
+    <h2>Known limitations</h2>
+    <p>Despite our efforts, some limitations remain. We are aware of, and working on, the following:</p>
+    <ul>
+      <li><b>Animated visuals.</b> Some pages include rich animated graphics that illustrate how the product works. While these respect the reduce-motion preference, the underlying visual information is decorative and is conveyed in text elsewhere on the page.</li>
+      <li><b>Third-party content.</b> Some functionality relies on third-party services (for example, embedded forms). We do not fully control the accessibility of third-party components, though we choose and configure them with accessibility in mind.</li>
+      <li><b>Ongoing review.</b> As we add pages and features, newly published content may not yet have been fully audited against WCAG 2.1 AA. We address issues as we identify them.</li>
+    </ul>
+    <p>This statement reflects the current state of the site and is not a claim of full conformance. We update it as the site changes.</p>
+
+    <h2>Measures we take</h2>
+    <ul>
+      <li>We consider accessibility during design and development rather than treating it as an afterthought.</li>
+      <li>We test pages with keyboard navigation and check colour contrast as part of building them.</li>
+      <li>We review and update this statement as the website evolves.</li>
+    </ul>
+
+    <h2>Feedback &amp; reporting an issue</h2>
+    <p>We welcome your feedback on the accessibility of QuantumOne. If you encounter a barrier, or need information from this site in a different format, please tell us — your reports help us prioritise fixes.</p>
+    <p>You can reach us through our <a href="https://www.quantumone.app/contact.html">contact page</a> (select "Support"). Please include the page address and a description of the problem, and the assistive technology or browser you were using if relevant.</p>
+    <p>We aim to respond to accessibility feedback within <b>2 to 3 business days</b>.</p>
+
+    <h2>Assessment approach</h2>
+    <p>QuantumOne assessed the accessibility of this website by <b>self-evaluation</b>, carried out by our own team using manual testing (keyboard navigation, screen-reader checks, and contrast review). We have not yet commissioned a formal third-party accessibility audit. We do not claim certification or conformance beyond what is described in this statement.</p>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-cols">
+      <!-- Brand + social -->
+      <div class="footer-brand">
+        <img class="footer-logo" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" />
+        <div class="footer-tagline">The first personal optimisation engine.</div>
+        <a class="footer-social" href="https://x.com/quantumone_" target="_blank" rel="noopener noreferrer" aria-label="Follow QuantumOne on X">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Follow us on X
+        </a>
+      </div>
+
+      <!-- Company -->
+      <nav class="footer-col" aria-label="Company">
+        <div class="footer-col-h">Company</div>
+        <a href="https://www.quantumone.app">Home</a>
+        <a href="https://www.quantumone.app/about.html">About</a>
+        <a href="https://www.quantumone.app/contact.html">Contact</a>
+        <a href="https://www.quantumone.app/accessibility.html">Accessibility</a>
+      </nav>
+
+      <!-- Legal -->
+      <nav class="footer-col" aria-label="Legal">
+        <div class="footer-col-h">Legal</div>
+        <a href="https://www.quantumone.app/privacy.html">Privacy Policy</a>
+        <a href="https://www.quantumone.app/terms.html">Terms &amp; Conditions</a>
+        <a href="https://www.quantumone.app/disclaimer.html">Medical Disclaimer</a>
+        <a href="https://www.quantumone.app/consumer-health-data.html">Consumer Health Data</a>
+        <a href="https://www.quantumone.app/do-not-sell-or-share.html">Do Not Sell or Share My Info</a>
+      </nav>
+    </div>
+
+    <div class="footer-disclaimer">
+      QuantumOne is a general wellness and self-optimization tool. It is not a medical device
+      and does not provide medical advice, diagnosis, or treatment. Correlations and advice are
+      statistical estimates, not clinical predictions. Always consult a qualified healthcare
+      professional before making health decisions.
+    </div>
+  </footer>
+</body>
+</html>
