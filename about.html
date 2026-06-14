@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About QuantumOne: The First Personal Optimisation Engine</title>
+  <meta name="description" content="QuantumOne is the first personal optimisation engine. It cross-references the health data you already collect and turns it into prioritised, evidence-led advice. Our story, mission, and the Kaizen philosophy behind it." />
+  <link rel="canonical" href="https://www.quantumone.app/about.html" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" /></noscript>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About QuantumOne",
+    "url": "https://www.quantumone.app/about.html",
+    "description": "The story behind QuantumOne, the first personal optimisation engine: why we built the layer above your wearables, labs, genetics, and supplements, the Kaizen philosophy that shapes it, and the future it is built for.",
+    "isPartOf": { "@type": "WebSite", "name": "QuantumOne", "url": "https://www.quantumone.app" },
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "QuantumOne",
+      "url": "https://www.quantumone.app",
+      "slogan": "The first personal optimisation engine.",
+      "description": "QuantumOne is the first personal optimisation engine. It sits above the wearables, blood tests, genetics, CGMs, supplements, and environmental data a person already generates, cross-references it against the latest literature and their own history, and uncovers the optimisations no single device can see. The output is a list of specific actions, each with the expected effect and the metric it moves. QuantumOne encodes Kaizen, the Japanese principle of continuous improvement, into software.",
+      "foundingDate": "2024-02-16",
+      "areaServed": "US",
+      "knowsAbout": ["personal optimisation", "biohacking", "longevity", "cognitive performance", "quantified self", "wearable data", "health data correlation", "evidence-based self-improvement"],
+      "contactPoint": { "@type": "ContactPoint", "contactType": "customer support", "url": "https://www.quantumone.app/contact.html" }
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg-deep: #06040d;
+      --bg-surface: rgba(22, 17, 40, 0.85);
+      --border-glow: rgba(120, 60, 220, 0.18);
+      --border-glow-top: rgba(160, 100, 255, 0.25);
+      --text-primary: #e2dee9;
+      --text-secondary: #9a93b0;
+      --text-muted: #5a5475;
+      --accent-purple: #9333ea;
+      --accent-pink: #c026d3;
+      --accent-yellow: #F6F3A6;
+      --accent-yellow-muted: #AFAC79;
+      --grad-a: #5539C6;
+      --grad-b: #B936CE;
+      --lav: rgb(199, 181, 253);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 12%, rgba(85, 57, 198, 0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 82% 86%, rgba(192, 38, 211, 0.06) 0%, transparent 55%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .top { position: relative; z-index: 1; text-align: center; padding: 34px 16px 0; }
+    .top img { height: 30px; width: auto; opacity: 0.95; }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 72px 24px 0;
+    }
+
+    .section-title { font-size: clamp(30px, 5vw, 40px); font-weight: 300; line-height: 1.15; letter-spacing: -0.4px; color: var(--text-primary); text-align: center; }
+    .section-title .accent { background: linear-gradient(100deg, var(--grad-a), var(--grad-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lede { font-size: clamp(16px, 2vw, 18px); font-weight: 300; line-height: 1.6; color: var(--text-secondary); max-width: 640px; margin: 18px auto 0; text-align: center; }
+
+    /* ── story blocks ── */
+    .block { max-width: 600px; margin: 64px auto 0; }
+    .block-h { font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--lav); margin-bottom: 14px; text-align: center; }
+    .block p { font-size: 15.5px; font-weight: 300; line-height: 1.75; color: var(--text-secondary); margin-bottom: 16px; }
+    .block p:last-child { margin-bottom: 0; }
+    .block p b { color: var(--text-primary); font-weight: 400; }
+    .block p .lav { color: var(--lav); }
+    .why-list { list-style: none; max-width: 600px; margin: 18px auto 0; padding: 0; }
+    .why-list li { position: relative; padding-left: 22px; font-size: 15.5px; font-weight: 300; line-height: 1.7; color: var(--text-secondary); margin-bottom: 10px; }
+    .why-list li:last-child { margin-bottom: 0; }
+    .why-list li b { color: var(--text-primary); font-weight: 400; }
+    .why-list li::before {
+      content: '';
+      position: absolute; left: 2px; top: 9px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: linear-gradient(120deg, var(--grad-a), var(--grad-b));
+    }
+
+    /* pull-quote (Kaizen) */
+    .quote { max-width: 600px; margin: 64px auto 0; text-align: center; }
+    .quote-text { font-size: clamp(20px, 3vw, 26px); font-weight: 300; line-height: 1.4; letter-spacing: -0.2px; }
+    .quote-text .accent { background: linear-gradient(100deg, var(--grad-a), var(--grad-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+    /* ── The vision (manifesto peak) ── */
+    .vision-block {
+      max-width: 640px;
+      margin: 80px auto 0;
+      padding-top: 56px;
+      border-top: 1px solid rgba(120, 60, 220, 0.16);
+      text-align: center;
+    }
+    .vision-lede {
+      font-size: clamp(20px, 2.8vw, 25px);
+      font-weight: 300;
+      line-height: 1.45;
+      letter-spacing: -0.2px;
+      color: var(--text-primary);
+      margin-bottom: 18px;
+    }
+    .vision-block p {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      max-width: 580px;
+      margin: 0 auto 16px;
+    }
+    .vision-block p b { font-weight: 400; }
+    .vision-block p .lav { color: var(--lav); }
+    .vision-close {
+      font-size: 17px !important;
+      color: var(--text-primary) !important;
+      margin-top: 22px !important;
+      margin-bottom: 0 !important;
+    }
+    .vision-bridge {
+      font-size: 15px !important;
+      color: var(--text-muted) !important;
+      margin-top: 26px !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* the Kaizen loop, as a quiet inline diagram */
+    .loop {
+      display: flex; flex-wrap: nowrap; justify-content: center; align-items: center;
+      gap: 8px 4px;
+      width: calc(100% + 48px);
+      margin: 28px -24px 0;
+    }
+    .loop span { font-size: 12.5px; font-weight: 400; color: var(--text-secondary); padding: 7px 13px; border-radius: 20px; background: rgba(14, 10, 26, 0.55); box-shadow: inset 0 0 12px rgba(120, 60, 220, 0.13); }
+    .loop .arr { background: none; box-shadow: none; color: var(--lav); padding: 0 2px; }
+    .loop .loop-cycle {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 600;
+      color: var(--lav);
+    }
+
+    /* ── CTA card (email capture, reused from index) ── */
+    .cta-card {
+      max-width: 520px;
+      margin: 72px auto 0;
+      padding: 30px 30px 26px;
+      text-align: center;
+      border-radius: 18px;
+      border: 1px solid var(--border-glow);
+      border-top-color: var(--border-glow-top);
+      background:
+        radial-gradient(ellipse at 14% 6%, rgba(147, 51, 234, 0.07) 0%, transparent 52%),
+        linear-gradient(165deg, rgba(28, 22, 48, 0.92), rgba(17, 13, 30, 0.97));
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.32);
+    }
+    .cta-label { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--lav); margin-bottom: 16px; }
+    .email-form { display: flex; gap: 10px; }
+    .email-input {
+      flex: 1;
+      padding: 13px 15px;
+      font-family: inherit; font-size: 14.5px; font-weight: 300;
+      color: var(--text-primary);
+      background: rgba(10, 7, 20, 0.6);
+      border: 1px solid var(--border-glow);
+      border-radius: 10px; outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .email-input::placeholder { color: var(--text-muted); }
+    .email-input:focus { border-color: rgba(160, 100, 255, 0.5); box-shadow: 0 0 0 3px rgba(120, 60, 220, 0.16); }
+    .submit-btn {
+      padding: 13px 22px;
+      background: linear-gradient(135deg, #6d28d9, #9333ea, #c026d3);
+      border: none; border-radius: 10px;
+      font-family: inherit; font-size: 14.5px; font-weight: 600;
+      color: var(--accent-yellow); cursor: pointer; white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 0 28px rgba(147, 51, 234, 0.45), 0 4px 16px rgba(0, 0, 0, 0.4); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+    .form-success { display: none; font-size: 14px; font-weight: 300; line-height: 1.6; color: var(--text-secondary); }
+    .form-success.visible { display: block; }
+    .success-check { color: var(--lav); font-weight: 600; margin-right: 4px; }
+    .form-note { font-size: 11.5px; font-weight: 300; color: var(--text-muted); margin-top: 12px; }
+    .cta-or { font-size: 13px; font-weight: 300; color: var(--text-muted); margin-top: 18px; }
+    .cta-or a { color: var(--accent-yellow-muted); text-decoration: none; }
+    .cta-or a:hover { text-decoration: underline; }
+
+    /* ── footer (ported verbatim from index.html) ── */
+    .footer { position: relative; z-index: 1; padding: 0 24px 48px; margin-top: 120px; }
+    .footer-cols {
+      max-width: 760px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.5fr 1fr 1.4fr; gap: 32px 40px;
+      padding-bottom: 32px; border-bottom: 1px solid rgba(120, 60, 220, 0.12); text-align: left;
+    }
+    .footer-brand { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .footer-logo { height: 26px; width: auto; opacity: 0.95; }
+    .footer-tagline { font-size: 12px; font-weight: 300; color: var(--text-muted); line-height: 1.5; }
+    .footer-social { display: inline-flex; align-items: center; gap: 7px; color: #7d7896; text-decoration: none; font-size: 12px; letter-spacing: 0.3px; transition: color 0.2s ease; margin-top: 2px; }
+    .footer-social:hover { color: var(--text-secondary); }
+    .footer-social svg { width: 13px; height: 13px; fill: currentColor; }
+    .footer-col { display: flex; flex-direction: column; gap: 9px; }
+    .footer-col-h { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px; }
+    .footer-col a { font-size: 12.5px; font-weight: 300; color: var(--accent-yellow-muted); text-decoration: none; transition: opacity 0.18s ease; }
+    .footer-col a:hover { opacity: 0.72; }
+    .footer-disclaimer { font-size: 10px; color: #857f99; line-height: 1.7; max-width: 640px; margin: 28px auto 0; padding: 0 16px; text-align: center; }
+    @media (max-width: 760px) {
+      .footer { padding: 0 18px 48px; }
+      .footer-cols { grid-template-columns: 1fr 1fr; gap: 28px 24px; }
+      .footer-brand { grid-column: 1 / -1; align-items: center; text-align: center; }
+      .footer-social { align-self: center; }
+    }
+    @media (max-width: 520px) {
+      .footer-cols { grid-template-columns: 1fr; gap: 26px; }
+      .footer-col { align-items: center; text-align: center; }
+    }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 56px 18px 0; }
+      .block, .quote { margin-top: 48px; }
+      .vision-block { margin-top: 56px; padding-top: 44px; }
+      .loop { margin-top: 48px; width: 100%; margin-left: 0; margin-right: 0; flex-wrap: wrap; }
+      .cta-card { padding: 26px 22px 24px; }
+      .email-form { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .submit-btn, .email-input { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <a href="https://www.quantumone.app"><img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne" /></a>
+  </div>
+
+  <main class="wrap">
+    <h1 class="section-title">We're building the layer<br><span class="accent">above your biology</span></h1>
+    <p class="lede">QuantumOne is the first personal optimisation engine. It reads the health data you already generate and tells you precisely what to change, why, and what to expect.</p>
+
+    <div class="block">
+      <div class="block-h">The problem</div>
+      <p>You track everything. Sleep, food, glucose, bloods, genetics, workouts, supplements, even the air you breathe. You generate tons of biological data. Yet none of it changes what you decide to do tomorrow.</p>
+      <p>Every wearable hands you another dashboard and leaves the analysis up to you. None of them give you real decisions, so the questions that actually matter stay unanswered: Is any of this working? Am I doing anything wrong? What should I change next?</p>
+    </div>
+
+    <div class="block">
+      <div class="block-h">What we built</div>
+      <p>QuantumOne sits above it all. It unifies your data, cross-references it against the latest literature and your own history, and uncovers the optimisations no single device can see. The output is a list of specific actions, each with the expected effect and the metric it moves.</p>
+      <p>Spotify didn't make the music. Airbnb didn't build the hotels. We didn't build the wearables, labs, or supplements. <b class="lav">We built the engine that turns all of it into a decision.</b></p>
+    </div>
+
+    <div class="quote">
+      <div class="quote-text">Every person can become the <span class="accent">optimal version of themselves</span>, given the right insights.</div>
+    </div>
+
+    <div class="block">
+      <div class="block-h">The philosophy</div>
+      <p>We built QuantumOne around <b>Kaizen</b>, the Japanese principle of continuous improvement. Compounding improvement, guided by evidence, repeated forever. A feedback loop of self-optimisation. <b class="lav">This is Kaizen.</b></p>
+      <p>Our core loop is Kaizen, in software:</p>
+    </div>
+    <div class="loop">
+      <span>Your data</span><span class="arr">→</span>
+      <span>Analysis</span><span class="arr">→</span>
+      <span>Advice</span><span class="arr">→</span>
+      <span>You act</span><span class="arr">→</span>
+      <span>New data</span><span class="arr">→</span>
+      <span>Sharper advice</span><span class="arr loop-cycle">↺</span>
+    </div>
+
+    <div class="block">
+      <div class="block-h">Who we are</div>
+      <p>We're a small, independent team of biohackers, engineers, and builders. We were deep in self-optimisation, neuroscience, biohacking, and self-experiments a decade before building this. We started QuantumOne frustrated that the most valuable thing (knowing what was actually working) was the one thing nothing could tell us. We built QuantumOne because we were sick of all the vague dashboards and charts.</p>
+      <p>We care a lot about privacy, our users' and our own. So we built that core value into the product: <b>anonymous by design, encrypted, and locked to your device.</b><br>We'd rather let our work show than put our faces on a landing page.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-h">Why now</div>
+      <p>For the first time, the inputs exist at scale: continuous glucose monitors, affordable genetic and blood tests, always-on wearables, environmental data. And the culture caught up. A decade ago, very few people discussed NAD, peptides, biohacking, or longevity. Now it's a conversation you'd hear among work colleagues.</p>
+      <ul class="why-list">
+        <li>Biohacking went mainstream.</li>
+        <li>The data revolution already happened.</li>
+        <li><b>The interpretation revolution starts now.</b></li>
+      </ul>
+    </div>
+
+    <div class="vision-block">
+      <div class="block-h">The vision</div>
+      <p class="vision-lede">In the future, people will find it insane that we ate, supplemented, and medicated ourselves without first reading our own genetics. It will be on par with people in the 1800s treating the flu with narcotics and leeches.</p>
+      <p>That shift points somewhere larger than health: a world where every person continuously improves themselves, <b class="lav">guided in real time by their own data and their own optimisation engine.</b></p>
+      <p class="vision-close">That future is likely. It's the world we're building.<br>QuantumOne is the step toward it.</p>
+      <p class="vision-bridge">You don't have to wait for that future to start optimising for it.</p>
+    </div>
+
+    <!-- CTA: early access + contact -->
+    <div class="cta-card">
+      <div class="cta-label">Get early access</div>
+      <form class="email-form" id="earlyAccessForm" onsubmit="return handleSubmit(event)">
+        <input type="email" class="email-input" id="emailInput" placeholder="Your email" required autocomplete="email" aria-label="Email address for early access" />
+        <button type="submit" class="submit-btn" id="submitBtn">Reserve early access</button>
+      </form>
+      <div class="form-success" id="formSuccess">
+        <span class="success-check">✓</span>You're on the list.<br/>You'll be among the first when the Personal Optimisation Engine launches.
+      </div>
+      <div class="form-note" id="formNote">No spam. Just a launch notification.</div>
+      <div class="cta-or">Want to reach us instead? <a href="https://www.quantumone.app/contact.html">Contact us</a>.</div>
+    </div>
+  </main>
+
+  <iframe name="google-form-target" style="display:none" aria-hidden="true"></iframe>
+
+  <footer class="footer">
+    <div class="footer-cols">
+      <!-- Brand + social -->
+      <div class="footer-brand">
+        <img class="footer-logo" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" />
+        <div class="footer-tagline">The first personal optimisation engine.</div>
+        <a class="footer-social" href="https://x.com/quantumone_" target="_blank" rel="noopener noreferrer" aria-label="Follow QuantumOne on X">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Follow us on X
+        </a>
+      </div>
+
+      <!-- Company -->
+      <nav class="footer-col" aria-label="Company">
+        <div class="footer-col-h">Company</div>
+        <a href="https://www.quantumone.app">Home</a>
+        <a href="https://www.quantumone.app/about.html">About</a>
+        <a href="https://www.quantumone.app/contact.html">Contact</a>
+        <a href="https://www.quantumone.app/accessibility.html">Accessibility</a>
+      </nav>
+
+      <!-- Legal -->
+      <nav class="footer-col" aria-label="Legal">
+        <div class="footer-col-h">Legal</div>
+        <a href="https://www.quantumone.app/privacy.html">Privacy Policy</a>
+        <a href="https://www.quantumone.app/terms.html">Terms &amp; Conditions</a>
+        <a href="https://www.quantumone.app/disclaimer.html">Medical Disclaimer</a>
+        <a href="https://www.quantumone.app/consumer-health-data.html">Consumer Health Data</a>
+        <a href="https://www.quantumone.app/do-not-sell-or-share.html">Do Not Sell or Share My Info</a>
+      </nav>
+    </div>
+
+    <div class="footer-disclaimer">
+      QuantumOne is a general wellness and self-optimization tool. It is not a medical device
+      and does not provide medical advice, diagnosis, or treatment. Correlations and advice are
+      statistical estimates, not clinical predictions. Always consult a qualified healthcare
+      professional before making health decisions.
+    </div>
+  </footer>
+
+  <script>
+    // Email capture: posts to the Google Form via hidden iframe (no redirect),
+    // carrying the ?src=/utm_* signup-source param, identical to the landing page.
+    const GF_SOURCE_ENTRY = 'entry.344169846';
+    function getSignupSource() {
+      try {
+        const p = new URLSearchParams(window.location.search);
+        const parts = [];
+        p.forEach(function (v, k) { if (k === 'src' || k.indexOf('utm_') === 0) parts.push(k + '=' + v); });
+        if (document.referrer) { try { parts.push('ref=' + new URL(document.referrer).hostname); } catch (e) {} }
+        if (!parts.length) parts.push('about-page');
+        return parts.join('|').slice(0, 250);
+      } catch (e) { return 'about-page'; }
+    }
+    function appendSourceField(googleForm) {
+      if (!GF_SOURCE_ENTRY) return;
+      const s = document.createElement('input');
+      s.name = GF_SOURCE_ENTRY;
+      s.value = getSignupSource();
+      googleForm.appendChild(s);
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      if (btn.disabled) return;
+
+      const email = document.getElementById('emailInput').value;
+      const form = document.getElementById('earlyAccessForm');
+      const success = document.getElementById('formSuccess');
+      const note = document.getElementById('formNote');
+      btn.disabled = true;
+
+      const googleForm = document.createElement('form');
+      googleForm.method = 'POST';
+      googleForm.action = 'https://docs.google.com/forms/d/e/1FAIpQLScdKzTfV8XFIxG9m-l0yO79t5o8TIbCy0ysPtKJQ6DGiGuRGw/formResponse';
+      googleForm.target = 'google-form-target';
+      googleForm.style.display = 'none';
+
+      const input = document.createElement('input');
+      input.name = 'entry.1125282240';
+      input.value = email;
+      googleForm.appendChild(input);
+      appendSourceField(googleForm);
+
+      document.body.appendChild(googleForm);
+      googleForm.submit();
+      document.body.removeChild(googleForm);
+
+      setTimeout(function () {
+        form.style.display = 'none';
+        note.style.display = 'none';
+        success.classList.add('visible');
+      }, 400);
+
+      return false;
+    }
+  </script>
+</body>
+</html>
