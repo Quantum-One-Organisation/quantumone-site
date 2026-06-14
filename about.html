@@ -19,11 +19,11 @@
     "name": "About QuantumOne",
     "url": "https://www.quantumone.app/about.html",
     "description": "The story behind QuantumOne, the first personal optimisation engine: why we built the layer above your wearables, labs, genetics, and supplements, the Kaizen philosophy that shapes it, and the future it is built for.",
-    "isPartOf": { "@type": "WebSite", "name": "QuantumOne", "url": "https://www.quantumone.app/" },
+    "isPartOf": { "@type": "WebSite", "name": "QuantumOne", "url": "https://www.quantumone.app" },
     "mainEntity": {
       "@type": "Organization",
       "name": "QuantumOne",
-      "url": "https://www.quantumone.app/",
+      "url": "https://www.quantumone.app",
       "slogan": "The first personal optimisation engine.",
       "description": "QuantumOne is the first personal optimisation engine. It sits above the wearables, blood tests, genetics, CGMs, supplements, and environmental data a person already generates, cross-references it against the latest literature and their own history, and uncovers the optimisations no single device can see. The output is a list of specific actions, each with the expected effect and the metric it moves. QuantumOne encodes Kaizen, the Japanese principle of continuous improvement, into software.",
       "foundingDate": "2024-02-16",
@@ -50,6 +50,11 @@
       --grad-a: #5539C6;
       --grad-b: #B936CE;
       --lav: rgb(199, 181, 253);
+      /* content-width tokens (page content only; footer is separate chrome) */
+      --w-wide: 860px;
+      --w-vision: 780px;
+      --w-content: 720px;
+      --w-narrow: 560px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -81,23 +86,23 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 680px;
+      max-width: var(--w-wide);
       margin: 0 auto;
       padding: 72px 24px 0;
     }
 
     .section-title { font-size: clamp(30px, 5vw, 40px); font-weight: 300; line-height: 1.15; letter-spacing: -0.4px; color: var(--text-primary); text-align: center; }
     .section-title .accent { background: linear-gradient(100deg, var(--grad-a), var(--grad-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .lede { font-size: clamp(16px, 2vw, 18px); font-weight: 300; line-height: 1.6; color: var(--text-secondary); max-width: 640px; margin: 18px auto 0; text-align: center; }
+    .lede { font-size: clamp(16px, 2vw, 18px); font-weight: 300; line-height: 1.6; color: var(--text-secondary); max-width: var(--w-content); margin: 18px auto 0; text-align: center; }
 
     /* ── story blocks ── */
-    .block { max-width: 600px; margin: 64px auto 0; }
+    .block { max-width: var(--w-content); margin: 70px auto 0; }
     .block-h { font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--lav); margin-bottom: 14px; text-align: center; }
     .block p { font-size: 15.5px; font-weight: 300; line-height: 1.75; color: var(--text-secondary); margin-bottom: 16px; }
     .block p:last-child { margin-bottom: 0; }
     .block p b { color: var(--text-primary); font-weight: 400; }
     .block p .lav { color: var(--lav); }
-    .why-list { list-style: none; max-width: 600px; margin: 18px auto 0; padding: 0; }
+    .why-list { list-style: none; max-width: var(--w-content); margin: 18px auto 0; padding: 0; }
     .why-list li { position: relative; padding-left: 22px; font-size: 15.5px; font-weight: 300; line-height: 1.7; color: var(--text-secondary); margin-bottom: 10px; }
     .why-list li:last-child { margin-bottom: 0; }
     .why-list li b { color: var(--text-primary); font-weight: 400; }
@@ -109,14 +114,22 @@
     }
 
     /* pull-quote (Kaizen) */
-    .quote { max-width: 600px; margin: 64px auto 0; text-align: center; }
+    .quote { max-width: var(--w-content); margin: 70px auto 0; text-align: center; }
     .quote-text { font-size: clamp(20px, 3vw, 26px); font-weight: 300; line-height: 1.4; letter-spacing: -0.2px; }
     .quote-text .accent { background: linear-gradient(100deg, var(--grad-a), var(--grad-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
     /* ── The vision (manifesto peak) ── */
     .vision-block {
-      max-width: 640px;
-      margin: 80px auto 0;
+      /* true breakout, centered: left:50% (of parent) + translateX(-50% of own width) lands the
+         band centered in the viewport at --w-wide, escaping .wrap's padded content box */
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--w-wide);
+      max-width: calc(100vw - 32px);
+      margin-top: 88px;
+      padding-left: 16px;
+      padding-right: 16px;
       padding-top: 56px;
       border-top: 1px solid rgba(120, 60, 220, 0.16);
       text-align: center;
@@ -134,7 +147,7 @@
       font-weight: 300;
       line-height: 1.75;
       color: var(--text-secondary);
-      max-width: 580px;
+      max-width: var(--w-vision);
       margin: 0 auto 16px;
     }
     .vision-block p b { font-weight: 400; }
@@ -157,9 +170,9 @@
       display: flex; flex-wrap: nowrap; justify-content: center; align-items: center;
       gap: 8px 4px;
       width: calc(100% + 48px);
-      margin: 28px -24px 0;
+      margin: 22px -24px 0;
     }
-    .loop span { font-size: 12.5px; font-weight: 400; color: var(--text-secondary); padding: 7px 13px; border-radius: 20px; background: rgba(14, 10, 26, 0.55); box-shadow: inset 0 0 12px rgba(120, 60, 220, 0.13); }
+    .loop span { font-size: 12.5px; font-weight: 400; color: var(--text-secondary); padding: 9px 13px; border-radius: 20px; background: rgba(14, 10, 26, 0.55); box-shadow: inset 0 0 12px rgba(120, 60, 220, 0.13); }
     .loop .arr { background: none; box-shadow: none; color: var(--lav); padding: 0 2px; }
     .loop .loop-cycle {
       font-size: 22px;
@@ -170,8 +183,8 @@
 
     /* ── CTA card (email capture, reused from index) ── */
     .cta-card {
-      max-width: 520px;
-      margin: 72px auto 0;
+      max-width: var(--w-narrow);
+      margin: 79px auto 0;
       padding: 30px 30px 26px;
       text-align: center;
       border-radius: 18px;
@@ -247,8 +260,8 @@
 
     @media (max-width: 520px) {
       .wrap { padding: 56px 18px 0; }
-      .block, .quote { margin-top: 48px; }
-      .vision-block { margin-top: 56px; padding-top: 44px; }
+      .block, .quote { margin-top: 53px; }
+      .vision-block { margin-top: 62px; padding-top: 44px; }
       .loop { margin-top: 48px; width: 100%; margin-left: 0; margin-right: 0; flex-wrap: wrap; }
       .cta-card { padding: 26px 22px 24px; }
       .email-form { flex-direction: column; }
