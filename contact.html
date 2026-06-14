@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact QuantumOne</title>
+  <meta name="description" content="Get in touch with QuantumOne — support, partnerships, press, or privacy and data requests." />
+  <link rel="canonical" href="https://www.quantumone.app/contact.html" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;600&display=swap" /></noscript>
+
+  <style>
+    :root {
+      --bg-deep: #06040d;
+      --bg-surface: rgba(22, 17, 40, 0.85);
+      --border-glow: rgba(120, 60, 220, 0.18);
+      --border-glow-top: rgba(160, 100, 255, 0.25);
+      --text-primary: #e2dee9;
+      --text-secondary: #9a93b0;
+      --text-muted: #5a5475;
+      --accent-purple: #9333ea;
+      --accent-pink: #c026d3;
+      --accent-yellow: #F6F3A6;
+      --accent-yellow-muted: #AFAC79;
+      --grad-a: #5539C6;
+      --grad-b: #B936CE;
+      --lav: rgb(199, 181, 253);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 16%, rgba(85, 57, 198, 0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 84%, rgba(192, 38, 211, 0.06) 0%, transparent 55%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .top {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 34px 16px 0;
+    }
+    .top img { height: 30px; width: auto; opacity: 0.95; }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 72px 24px 0;
+      text-align: center;
+    }
+
+    .section-title { font-size: 32px; font-weight: 300; line-height: 1.3; letter-spacing: -0.3px; color: var(--text-primary); }
+    .section-title .accent { background: linear-gradient(100deg, var(--grad-a), var(--grad-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .sub { font-size: clamp(15px, 1.8vw, 17px); font-weight: 300; line-height: 1.6; color: var(--text-secondary); max-width: 520px; margin: 16px auto 0; }
+    .sub a { color: var(--accent-yellow-muted); text-decoration: none; }
+    .sub a:hover { text-decoration: underline; }
+
+    /* ── form card ── */
+    .form-card {
+      max-width: 560px;
+      margin: 40px auto 0;
+      padding: 30px 30px 28px;
+      text-align: left;
+      border-radius: 18px;
+      border: 1px solid var(--border-glow);
+      border-top-color: var(--border-glow-top);
+      background:
+        radial-gradient(ellipse at 12% 6%, rgba(147, 51, 234, 0.06) 0%, transparent 52%),
+        linear-gradient(165deg, rgba(28, 22, 48, 0.92), rgba(17, 13, 30, 0.97));
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.32);
+    }
+    .field { margin-bottom: 18px; }
+    .field:last-of-type { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+    }
+    .field .req { color: var(--lav); }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 300;
+      color: var(--text-primary);
+      background: rgba(10, 7, 20, 0.6);
+      border: 1px solid var(--border-glow);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field textarea { min-height: 130px; resize: vertical; line-height: 1.55; }
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--text-muted); }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(160, 100, 255, 0.5);
+      box-shadow: 0 0 0 3px rgba(120, 60, 220, 0.16);
+    }
+    /* select chevron */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      width: 8px; height: 8px;
+      border-right: 1.5px solid var(--lav);
+      border-bottom: 1.5px solid var(--lav);
+      transform: translateY(-65%) rotate(45deg);
+      pointer-events: none;
+    }
+    .field select option { background: #100b1e; color: var(--text-primary); }
+
+    .hp { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+    .submit-btn {
+      width: 100%;
+      margin-top: 22px;
+      padding: 15px 24px;
+      background: linear-gradient(135deg, #6d28d9, #9333ea, #c026d3);
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--accent-yellow);
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 0 28px rgba(147, 51, 234, 0.45), 0 4px 16px rgba(0, 0, 0, 0.4); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled {
+      background: rgba(60, 54, 80, 0.55);
+      color: var(--text-muted);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .submit-btn:disabled:hover { transform: none; box-shadow: none; }
+
+    .form-note { font-size: 11.5px; font-weight: 300; line-height: 1.6; color: var(--text-muted); text-align: center; margin-top: 14px; }
+    .err { display: none; font-size: 12.5px; color: #f0a5c0; margin-top: 10px; text-align: center; }
+    .err.show { display: block; }
+
+    /* ── success state ── */
+    .success {
+      display: none;
+      max-width: 560px;
+      margin: 40px auto 0;
+      padding: 40px 30px;
+      text-align: center;
+      border-radius: 18px;
+      border: 1px solid var(--border-glow);
+      border-top-color: var(--border-glow-top);
+      background: linear-gradient(165deg, rgba(28, 22, 48, 0.92), rgba(17, 13, 30, 0.97));
+    }
+    .success.show { display: block; }
+    .success .tick {
+      width: 48px; height: 48px; margin: 0 auto 16px;
+      border-radius: 50%;
+      border: 1.5px solid var(--lav);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .success .tick svg { width: 22px; height: 22px; stroke: var(--lav); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .success h2 { font-size: 22px; font-weight: 300; color: var(--text-primary); margin-bottom: 8px; }
+    .success p { font-size: 14px; font-weight: 300; line-height: 1.6; color: var(--text-secondary); }
+    .home-btn {
+      display: inline-block;
+      margin-top: 22px;
+      padding: 13px 26px;
+      background: linear-gradient(135deg, #6d28d9, #9333ea, #c026d3);
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--accent-yellow);
+      text-decoration: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 0 20px rgba(147, 51, 234, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .home-btn:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 0 28px rgba(147, 51, 234, 0.45), 0 4px 16px rgba(0, 0, 0, 0.4); }
+    .home-btn:active { transform: translateY(0); }
+
+    /* ── footer (ported verbatim from index.html) ── */
+    .footer { position: relative; z-index: 1; padding: 0 24px 48px; margin-top: 120px; }
+    .footer-cols {
+      max-width: 760px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.5fr 1fr 1.4fr; gap: 32px 40px;
+      padding-bottom: 32px; border-bottom: 1px solid rgba(120, 60, 220, 0.12); text-align: left;
+    }
+    .footer-brand { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .footer-logo { height: 26px; width: auto; opacity: 0.95; }
+    .footer-tagline { font-size: 12px; font-weight: 300; color: var(--text-muted); line-height: 1.5; }
+    .footer-social { display: inline-flex; align-items: center; gap: 7px; color: #7d7896; text-decoration: none; font-size: 12px; letter-spacing: 0.3px; transition: color 0.2s ease; margin-top: 2px; }
+    .footer-social:hover { color: var(--text-secondary); }
+    .footer-social svg { width: 13px; height: 13px; fill: currentColor; }
+    .footer-col { display: flex; flex-direction: column; gap: 9px; }
+    .footer-col-h { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px; }
+    .footer-col a { font-size: 12.5px; font-weight: 300; color: var(--accent-yellow-muted); text-decoration: none; transition: opacity 0.18s ease; }
+    .footer-col a:hover { opacity: 0.72; }
+    .footer-disclaimer { font-size: 10px; color: #857f99; line-height: 1.7; max-width: 640px; margin: 28px auto 0; padding: 0 16px; text-align: center; }
+    @media (max-width: 760px) {
+      .footer { padding: 0 18px 48px; }
+      .footer-cols { grid-template-columns: 1fr 1fr; gap: 28px 24px; }
+      .footer-brand { grid-column: 1 / -1; align-items: center; text-align: center; }
+      .footer-social { align-self: center; }
+    }
+    @media (max-width: 520px) {
+      .footer-cols { grid-template-columns: 1fr; gap: 26px; }
+      .footer-col { align-items: center; text-align: center; }
+    }
+
+    @media (max-width: 520px) {
+      .section-title { font-size: 26px; }
+      .wrap { padding: 56px 18px 0; }
+      .form-card, .success { padding: 26px 22px 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .submit-btn, .field input, .field select, .field textarea { transition: none; }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact QuantumOne",
+    "url": "https://www.quantumone.app/contact.html",
+    "description": "Contact QuantumOne for support, partnerships, press, or privacy and data requests. We aim to reply within 2 to 3 business days.",
+    "isPartOf": { "@type": "WebSite", "name": "QuantumOne", "url": "https://www.quantumone.app" },
+    "about": {
+      "@type": "Organization",
+      "name": "QuantumOne",
+      "url": "https://www.quantumone.app",
+      "description": "QuantumOne is a personal optimisation engine that cross-references the health and lifestyle data you already collect and turns it into prioritised, evidence-led advice.",
+      "contactPoint": [
+        { "@type": "ContactPoint", "contactType": "customer support", "url": "https://www.quantumone.app/contact.html", "availableLanguage": "English" },
+        { "@type": "ContactPoint", "contactType": "press", "url": "https://www.quantumone.app/contact.html" },
+        { "@type": "ContactPoint", "contactType": "partnerships", "url": "https://www.quantumone.app/contact.html" },
+        { "@type": "ContactPoint", "contactType": "privacy", "url": "https://www.quantumone.app/contact.html" }
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="top">
+    <a href="https://www.quantumone.app"><img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne" /></a>
+  </div>
+
+  <main class="wrap">
+    <h2 class="section-title">Contact us</h2>
+    <p class="sub">Questions, partnerships, press, and requests.<br>Please send your message here and we'll get back to you.<br>You can also read more <a href="https://www.quantumone.app/about.html">about us</a>.</p>
+
+    <!-- Contact form. Posts to Google Forms via a hidden iframe so the page never redirects. -->
+    <form class="form-card" id="contactForm" novalidate>
+      <div class="field">
+        <label for="cReason">Reason <span class="req">*</span></label>
+        <div class="select-wrap">
+          <!-- IMPORTANT: each option value MUST match the Google Form dropdown option text EXACTLY,
+               or Google rejects the response. Edit these to match your form's options. -->
+          <select id="cReason" required>
+            <option value="" disabled selected hidden>Select a reason…</option>
+            <option value="Support">Support</option>
+            <option value="Partnership">Partnership</option>
+            <option value="Press">Press</option>
+            <option value="Privacy / Data request">Privacy / Data request</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="cEmail">Email <span class="req">*</span></label>
+        <input type="email" id="cEmail" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+
+      <div class="field">
+        <label for="cMessage">Message <span class="req">*</span></label>
+        <textarea id="cMessage" placeholder="How can we help?" required></textarea>
+      </div>
+
+      <!-- honeypot: off-screen, not a real field. Bots fill it; humans never see it. -->
+      <div class="hp" aria-hidden="true">
+        <label for="cCompany">Company</label>
+        <input type="text" id="cCompany" name="company" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <button type="submit" class="submit-btn" id="cSubmit" disabled>Send message</button>
+      <div class="err" id="cErr">Please complete every field with a valid email.</div>
+      <p class="form-note">We aim to reply within 2&ndash;3 business days.</p>
+    </form>
+
+    <div class="success" id="contactSuccess">
+      <div class="tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h2>Message sent</h2>
+      <p>Thanks for reaching out. We aim to reply within 2&ndash;3 business days.</p>
+      <a class="home-btn" href="https://www.quantumone.app">Back to home</a>
+    </div>
+  </main>
+
+  <!-- hidden sink so the Google Forms POST doesn't navigate the page -->
+  <iframe name="cf_sink" style="display:none" aria-hidden="true"></iframe>
+
+  <footer class="footer">
+    <div class="footer-cols">
+      <!-- Brand + social -->
+      <div class="footer-brand">
+        <img class="footer-logo" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" />
+        <div class="footer-tagline">The first personal optimisation engine.</div>
+        <a class="footer-social" href="https://x.com/quantumone_" target="_blank" rel="noopener noreferrer" aria-label="Follow QuantumOne on X">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Follow us on X
+        </a>
+      </div>
+
+      <!-- Company -->
+      <nav class="footer-col" aria-label="Company">
+        <div class="footer-col-h">Company</div>
+        <a href="https://www.quantumone.app">Home</a>
+        <a href="https://www.quantumone.app/about.html">About</a>
+        <a href="https://www.quantumone.app/contact.html">Contact</a>
+        <a href="https://www.quantumone.app/accessibility.html">Accessibility</a>
+      </nav>
+
+      <!-- Legal -->
+      <nav class="footer-col" aria-label="Legal">
+        <div class="footer-col-h">Legal</div>
+        <a href="https://www.quantumone.app/privacy.html">Privacy Policy</a>
+        <a href="https://www.quantumone.app/terms.html">Terms &amp; Conditions</a>
+        <a href="https://www.quantumone.app/disclaimer.html">Medical Disclaimer</a>
+        <a href="https://www.quantumone.app/consumer-health-data.html">Consumer Health Data</a>
+        <a href="https://www.quantumone.app/do-not-sell-or-share.html">Do Not Sell or Share My Info</a>
+      </nav>
+    </div>
+
+    <div class="footer-disclaimer">
+      QuantumOne is a general wellness and self-optimization tool. It is not a medical device
+      and does not provide medical advice, diagnosis, or treatment. Correlations and advice are
+      statistical estimates, not clinical predictions. Always consult a qualified healthcare
+      professional before making health decisions.
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // Google Form: field entry IDs (provided)
+      var FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScVa19LB0MFe48JBZ-SUV3mnGUsfdb_YoVtqljUqtoYg0Jnew/formResponse';
+      var ENTRY = { reason: 'entry.247782556', email: 'entry.907256693', message: 'entry.655759059' };
+
+      var form = document.getElementById('contactForm');
+      var reasonEl = document.getElementById('cReason');
+      var emailEl = document.getElementById('cEmail');
+      var msgEl = document.getElementById('cMessage');
+      var hpEl = document.getElementById('cCompany');
+      var btn = document.getElementById('cSubmit');
+      var err = document.getElementById('cErr');
+
+      function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+      // Live readiness: button is enabled only when every field passes the basic checks.
+      function formReady() {
+        return reasonEl.value !== ''
+          && emailEl.value.trim().length > 5 && emailEl.value.indexOf('@') !== -1
+          && msgEl.value.trim().length > 0;
+      }
+      function refresh() {
+        btn.disabled = !formReady();
+        if (formReady()) err.classList.remove('show');
+      }
+      ['input', 'change'].forEach(function (ev) {
+        [reasonEl, emailEl, msgEl].forEach(function (el) { el.addEventListener(ev, refresh); });
+      });
+      refresh();
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var reason = reasonEl.value;
+        var email = emailEl.value.trim();
+        var message = msgEl.value.trim();
+
+        // Honeypot tripped -> almost certainly a bot. Silently show success, send nothing.
+        if (hpEl && hpEl.value) {
+          form.style.display = 'none';
+          document.getElementById('contactSuccess').classList.add('show');
+          return;
+        }
+
+        if (!reason || !validEmail(email) || !message) {
+          err.classList.add('show');
+          refresh();
+          return;
+        }
+        err.classList.remove('show');
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
+
+        // Build a real Google Forms POST into the hidden iframe (no redirect, no CORS issue)
+        var gf = document.createElement('form');
+        gf.action = FORM_ACTION;
+        gf.method = 'POST';
+        gf.target = 'cf_sink';
+        function add(name, value) {
+          var i = document.createElement('input');
+          i.type = 'hidden'; i.name = name; i.value = value;
+          gf.appendChild(i);
+        }
+        add(ENTRY.reason, reason);
+        add(ENTRY.email, email);
+        add(ENTRY.message, message);
+        document.body.appendChild(gf);
+        gf.submit();
+
+        // Google Forms gives no readable response cross-origin; show success shortly after.
+        setTimeout(function () {
+          form.style.display = 'none';
+          document.getElementById('contactSuccess').classList.add('show');
+        }, 600);
+      });
+    })();
+  </script>
+</body>
+</html>
