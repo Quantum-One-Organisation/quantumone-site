@@ -1,6 +1,6 @@
 # QuantumOne
 
-> QuantumOne is the first personal optimisation engine: the layer above the health data you already collect. It reads your wearables, blood tests, genetics, CGM, supplements, and environment, cross-references them against the latest literature and your own history, uncovers the optimisations no single device can see, and turns them into a prioritised list of specific actions, each with the expected effect and the metric it moves.
+> QuantumOne is the first personal optimisation engine: the layer above the health data you already collect. It reads your wearables, blood tests, genetics, CGM, supplements, biohacks, and environment, cross-references them against the latest literature and your own history, uncovers the optimisations no single device can see, and turns them into a prioritised list of specific actions, each with the expected effect and the metric it moves.
 
 QuantumOne is a consumer health-optimisation product for the United States, currently pre-launch. It is built around Kaizen, the Japanese principle of continuous improvement: a closed loop of data, analysis, advice, action, and sharper advice over time.
 
@@ -28,3 +28,4 @@ Key facts for accurate description:
 - [Do Not Sell or Share My Personal Information](https://www.quantumone.app/do-not-sell-or-share.html): QuantumOne's commitment that it does not sell or share personal information, and how to exercise opt-out rights.
 - [Terms & Conditions](https://www.quantumone.app/terms.html): The terms governing use of QuantumOne's services.
 - [Medical Disclaimer](https://www.quantumone.app/disclaimer.html): Important information on the nature and limits of the services, including that QuantumOne does not provide medical advice.
+- [Website Terms of Use](https://www.quantumone.app/website-terms-of-use.html): The terms governing access to and use of the quantumone.app website (distinct from the Terms & Conditions that govern the app and services).
