@@ -1,29 +1,5 @@
 <!DOCTYPE html>
-<!--
-  QuantumOne — Landing Page (index.html)
-  https://www.quantumone.app
 
-  ARCHITECTURE:
-  Single self-contained HTML file. All CSS inline, all JS inline.
-  Zero external runtime dependencies — the particle animation is raw WebGL
-  (WebGL 1, GLSL ES 1.0), no Three.js, no CDN. One HTTP request for the
-  critical path. Do NOT split into external CSS/JS files.
-
-  ANIMATION SYSTEM:
-  One requestAnimationFrame loop (Geolines) drives everything:
-  - Raw WebGL particle scene (GPU shaders, hand-written GL pipeline)
-  - Connection lines canvas (via window._drawConnectionLines)
-  Do NOT add separate rAF loops.
-
-  PERFORMANCE RULES:
-  - No filter: drop-shadow on animated/composited elements (use text-shadow/box-shadow)
-  - Mouse listeners must be { passive: true }
-  - getBoundingClientRect cached, never called per-frame
-  - All CSS animations use GPU-composited properties (transform, opacity)
-
-  FONTS: DM Sans only (3 weights: 300, 400, 600, non-blocking load). Telegraf removed.
-  FAVICONS: 32x32 PNG + apple-touch-icon only. .ico and 16x16 removed.
--->
 <html lang="en" style="background:#06040d">
 <head>
   <meta charset="UTF-8" />
@@ -216,16 +192,21 @@
     }
 
     /* ── Icon glow state ── */
+    /* Perf (#7): transition only opacity, never the drop-shadow. Transitioning a
+       filter re-rasterises the glow every frame for the entire transition, and
+       multiple icons light/fade at once (see glowIcon/unglowIcon). The glow values
+       are unchanged; their appearance/withdrawal is now carried by the composited
+       opacity fade rather than an animated filter. */
     .source-item img.glowing {
       opacity: 1;
       filter: drop-shadow(0 0 16px rgba(147, 51, 234, 0.9));
-      transition: opacity 0.3s ease, filter 0.3s ease;
+      transition: opacity 0.3s ease;
     }
 
     .source-item img.glow-fade {
       opacity: 0.4;
       filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
-      transition: opacity 1s ease, filter 1s ease;
+      transition: opacity 1s ease;
     }
 
     @media (max-width: 520px) {
@@ -536,6 +517,10 @@
 
     .form-err { display: none; font-size: 12.5px; color: #f0a5c0; text-align: center; margin-top: 10px; }
     .form-err.show { display: block; }
+    .form-consent { font-size: 11px; line-height: 1.5; color: #5a5475; text-align: center; margin-top: 8px; }
+    .form-consent a { color: #AFAC79; text-decoration: none; }
+    .form-consent a:hover { text-decoration: underline; }
+    .advice-disclaimer { font-size: 11px; color: #5a5475; text-align: center; margin: -2px 0 14px; font-style: italic; }
     .form-note {
       font-size: 12px;
       color: #7d7896;
@@ -600,7 +585,12 @@
        min-height set to accommodate tallest card (card 4, bedtime). ── */
     .advice-carousel {
       position: relative;
-      min-height: 252px;
+      /* Height is set by JS to match the ACTIVE card (see goToCard), so the gap to the
+         dots stays minimal on every card and every viewport. min-height is just a
+         pre-JS fallback floor for first paint; JS overrides it once cards are measured.
+         Height is transitioned so the dots glide (not jump) as cards of differing
+         heights cross-fade. */
+      min-height: 200px;
       transition: transform 0.15s ease;
     }
 
@@ -654,11 +644,25 @@
 
     @media (max-width: 520px) {
       .advice-carousel {
-        min-height: 312px;
+        min-height: 230px;
       }
 
       .advice-card-inner {
         padding: 26px 22px;
+      }
+    }
+
+    /* Mobile / touch: neutralise the JS 3D-tilt on the email-capture card (#tiltCard)
+       and the advice carousel (#adviceCarousel). The tilt handler already skips
+       (hover: hover) and (pointer: fine) devices, but this is a CSS belt-and-suspenders:
+       on any device without a fine hovering pointer, force the resting transform so a
+       stray/synthesised transform can never move these cards on a touchscreen. Does NOT
+       affect the how-it-works advice card (different element), and leaves the privacy
+       cards' cipher effect untouched. */
+    @media (hover: none), (pointer: coarse) {
+      #tiltCard,
+      #adviceCarousel {
+        transform: none !important;
       }
     }
 
@@ -819,6 +823,8 @@
     }
     .footer-brand { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
     .footer-logo { height: 26px; width: auto; opacity: 0.95; }
+    .footer-logo-link { display: inline-block; line-height: 0; text-decoration: none; }
+    .footer-logo-link:hover .footer-logo { opacity: 1; }
     .footer-tagline { font-size: 12px; font-weight: 300; color: var(--text-muted); line-height: 1.5; }
     .footer-social {
       display: inline-flex; align-items: center; gap: 7px;
@@ -900,24 +906,6 @@
     .privacy-sub { font-size:clamp(15px,1.8vw,17px); font-weight:300; line-height:1.6; color:var(--text-secondary); max-width:600px; margin:0 auto 40px; }
 
     .privacy-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
-    @media (max-width:680px){
-      .privacy-grid { grid-template-columns:repeat(2,1fr); gap:14px; }
-      .pcard { aspect-ratio:auto; }
-      .pcard-inner { padding:14px 13px 15px; }
-      .pcard-stage { flex:0 0 auto; height:72px; margin-bottom:10px; overflow:visible; }
-      .pcard-stage svg { flex:0 0 auto; }
-      .pcard-stage svg { width:62px; height:62px; }
-      .pcard-head { font-size:14px; }
-      .pcard-copy { font-size:11.5px; line-height:1.42; }
-    }
-    @media (max-width:460px){
-      .privacy-grid { gap:12px; }
-      .pcard-inner { padding:13px 12px 14px; }
-      .pcard-stage { height:70px; }
-      .pcard-stage svg { width:60px; height:60px; }
-      .pcard-head { font-size:13.5px; }
-      .pcard-copy { font-size:11px; line-height:1.4; }
-    }
 
     /* card fill + border matched to the email submission .card */
     .pcard {
@@ -952,17 +940,54 @@
               mask-image: radial-gradient(ellipse 60% 56% at 50% 45%, #000 0%, #000 20%, transparent 70%);
     }
 
+    /* Horizontal (≤460px) cards are wide/short: the cipher grid is sized wide/short
+       in JS to fill them and is centred here, and the spotlight falloff is opened a
+       touch so the denser grid reads clearly across the tile. */
+    @media (max-width:460px){
+      .pcard-cipher {
+        display:flex; justify-content:center; align-items:flex-start;
+        -webkit-mask-image: radial-gradient(ellipse 60% 56% at 50% 45%, #000 0%, #000 35%, transparent 80%);
+                mask-image: radial-gradient(ellipse 60% 56% at 50% 45%, #000 0%, #000 35%, transparent 80%);
+      }
+    }
+
     .pcard-inner { position:relative; z-index:2; width:100%; height:100%; display:flex; flex-direction:column; padding:16px; text-align:left; }
     .pcard-stage { flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
-    .pcard-stage svg { width:80px; height:80px; overflow:visible;
-      filter:drop-shadow(0 3px 16px rgba(6,4,13,0.9)) drop-shadow(0 0 5px rgba(6,4,13,1)); }
+    /* Perf (#5): these container drop-shadows were #06040d (= --bg-deep) cast onto a
+       transparent card sitting over the same near-black background, so their only
+       visible effect was darkening the faint cipher glyphs right around the icon.
+       They re-rendered every frame because the icon's children animate (×6 cards).
+       Removed; the per-element beam glow below is kept and composited instead. */
+    .pcard-stage svg { width:80px; height:80px; overflow:visible; }
     .pcard-head { font-size:15px; font-weight:600; letter-spacing:-.01em; margin-bottom:5px; line-height:1.2; }
     .pcard-copy { font-size:11.5px; font-weight:300; line-height:1.45; color:var(--text-secondary); }
+
+    /* ── Privacy card responsive layout ──────────────────────────────────────
+       Placed AFTER the base .pcard rules on purpose: @media does NOT add
+       specificity, so these overrides must come later in source order to win
+       (otherwise the base aspect-ratio:1/1 + flex-column re-assert themselves).
+       3 cols (default) → 2 cols ≤620px (still square, scaling with the column)
+       → full-width horizontal rows ≤460px (icon beside the text). */
+    @media (max-width:620px){ .privacy-grid { grid-template-columns:repeat(2,1fr); gap:16px; } }
+    @media (max-width:460px){
+      .privacy-grid { grid-template-columns:1fr; gap:12px; }
+      .pcard { aspect-ratio:auto; }
+      .pcard-inner {
+        display:grid; grid-template-columns:56px 1fr;
+        grid-template-areas:"icon head" "icon copy";
+        align-items:center; column-gap:6px; row-gap:4px;
+        padding:14px 12px 14px 6px;
+      }
+      .pcard-stage { grid-area:icon; align-self:center; flex:0 0 auto; height:56px; min-height:0; margin:0; overflow:visible; }
+      .pcard-stage svg { width:56px; height:56px; }
+      .pcard-head { grid-area:head; align-self:end; font-size:14.5px; margin:0; }
+      .pcard-copy { grid-area:copy; align-self:start; font-size:11.5px; line-height:1.45; margin:0; }
+    }
 
     .pcard svg .ln { fill:none; stroke:var(--accent-purple); stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
     .pcard svg .gln { fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
     .pcard svg .soft { opacity:.28; }
-    .pcard svg .beam { stroke-width:1.8; filter:drop-shadow(0 0 4px var(--accent-pink)); }
+    .pcard svg .beam { stroke-width:1.8; filter:drop-shadow(0 0 4px var(--accent-pink)); will-change:transform; }
 
     /* 1 ENCRYPTION */
     .enc-pulse { transform-origin:50px 57px; animation:encPulse 2.8s ease-out infinite; }
@@ -1071,7 +1096,7 @@
   .hub-ring2 { stroke: rgba(176, 140, 240, 0.18); stroke-width: 1; fill: none; }
   .hub-track { stroke: rgba(199, 181, 253, 0.45); stroke-width: 1.4; fill: none; }
   .hub-orbits { stroke: rgba(199, 181, 253, 0.7); stroke-width: 1.2; fill: none; stroke-linecap: round; transform-box: fill-box; transform-origin: center; animation: fwHubSpin 16s linear infinite; }
-  .hub-sweep { stroke: rgba(222, 208, 255, 0.5); stroke-width: 5; fill: none; stroke-linecap: round; filter: blur(3px); transform-box: fill-box; transform-origin: center; animation: fwHubSpin 5s linear infinite; }
+  .hub-sweep { stroke: rgba(222, 208, 255, 0.5); stroke-width: 5; fill: none; stroke-linecap: round; filter: blur(3px); transform-box: fill-box; transform-origin: center; will-change: transform; animation: fwHubSpin 5s linear infinite; }
   .hub-mark path { fill: #ffffff; }
   .hub-pulse { stroke: var(--accent-pink); stroke-width: 2; fill: none; opacity: 0; transform-box: fill-box; transform-origin: center; }
   .hub-wordmark { width: 110px; max-width: 58vw; height: auto; margin-top: 12px; opacity: .9; animation: fwHubGlow 3.4s ease-in-out infinite; }
@@ -1087,8 +1112,12 @@
   .wire-out-pulse-core { fill: none; stroke: #fbf2ff; stroke-width: 2.4; stroke-linecap: round; opacity: .1; stroke-dasharray: 26 74; animation: fwWave 1.1s linear infinite; }
   .wire-dot { position: absolute; top: 0; left: 0; width: 3.4px; height: 3.4px; border-radius: 50%; background: #b3a3f0; box-shadow: 0 0 8px rgba(129, 109, 213, 0.85); opacity: 0; offset-distance: 0%; offset-rotate: 0deg; }
   .wire-dot.flow { animation: fwDot 1.6s linear infinite; }
-  .wire-flow { fill: none; stroke: rgb(199, 181, 253); stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 20 28; filter: blur(2.2px); opacity: .02; animation: wireFlow 1s linear infinite; }
-  .wire-flow.on { opacity: .34; }
+  /* Perf: blur + dashoffset run ONLY on the visible (.on) wires. The ~13 idle
+     wires sit at opacity .02 (imperceptible), so dropping their live Gaussian
+     blur + per-frame repaint is visually lossless and removes the main paint
+     storm in this section. */
+  .wire-flow { fill: none; stroke: rgb(199, 181, 253); stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 20 28; opacity: .02; }
+  .wire-flow.on { opacity: .34; filter: blur(2.2px); animation: wireFlow 1s linear infinite; }
   @keyframes wireFlow { to { stroke-dashoffset: -48px; } }
   @keyframes fwDot { 0% { offset-distance: 0%; opacity: 0; } 12% { opacity: 0.68; } 84% { opacity: 0.68; } 100% { offset-distance: 100%; opacity: 0; } }
   @keyframes fwWave { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
@@ -1227,7 +1256,7 @@
 
     <!-- Logo -->
     <div class="logo">
-      <img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" width="297" height="48" />
+      <img src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" width="297" height="48" decoding="async" />
     </div>
 
     <!-- Accent line -->
@@ -1267,23 +1296,27 @@
 
     <!-- Email capture card -->
     <div class="card" id="tiltCard">
-      <div class="card-label">Get early access</div>
+      <div class="card-label">Get priority access</div>
 
-      <form class="email-form" id="earlyAccessForm" onsubmit="return handleSubmit(event)">
+      <form class="email-form" id="earlyAccessForm" onsubmit="return submitEarlyAccess(event, 'top')">
         <input
           type="email"
+          inputmode="email"
           class="email-input"
           id="emailInput"
           placeholder="Your email"
           required
           autocomplete="email"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
           aria-label="Email address for early access"
         />
         <div class="hp-field" aria-hidden="true">
           <label for="companyTop">Company</label>
           <input type="text" id="companyTop" name="company" tabindex="-1" autocomplete="off" />
         </div>
-        <button type="submit" class="submit-btn" id="submitBtn">Reserve early access</button>
+        <button type="submit" class="submit-btn" id="submitBtn">Request invitation</button>
       </form>
 
       <div class="form-success" id="formSuccess">
@@ -1292,7 +1325,8 @@
       </div>
 
       <div class="form-err" id="formErr">Please enter a valid email address.</div>
-      <div class="form-note" id="formNote">No spam. Just a launch notification.</div>
+      <div class="form-note" id="formNote">No spam. Just one launch email and priority early access.</div>
+      <div class="form-consent">By submitting, you agree to our <a href="https://www.quantumone.app/website-terms-of-use.html">Website Terms</a> and <a href="https://www.quantumone.app/privacy.html">Privacy Policy</a>.</div>
     </div>
 
     <!-- Data Sources -->
@@ -1301,63 +1335,63 @@
       <canvas class="connection-canvas" id="connectionCanvas"></canvas>
       <div class="sources-grid">
         <div class="source-item">
-          <img src="./Icons/DNA-Icon.svg" alt="Genetics" loading="lazy" />
+          <img src="./Icons/DNA-Icon.svg" alt="Genetics" loading="lazy" width="44" height="44" decoding="async" />
           <span>Genetics</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" loading="lazy" />
+          <img src="./Icons/Nootropics-Icon.svg" alt="Nootropics & Supps" loading="lazy" width="44" height="44" decoding="async" />
           <span>Nootropics &amp; Supps</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Sleep-Icon.svg" alt="Sleep" loading="lazy" />
+          <img src="./Icons/Sleep-Icon.svg" alt="Sleep" loading="lazy" width="44" height="44" decoding="async" />
           <span>Sleep</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" loading="lazy" />
+          <img src="./Icons/Biohack-Icon.svg" alt="Biohacks" loading="lazy" width="44" height="44" decoding="async" />
           <span>Biohacks</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" loading="lazy" />
+          <img src="./Icons/Blood-Icon.svg" alt="Blood Tests" loading="lazy" width="44" height="44" decoding="async" />
           <span>Blood Tests</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" loading="lazy" />
+          <img src="./Icons/Contaminants-Icon.svg" alt="Air, Mould & Pollen" loading="lazy" width="44" height="44" decoding="async" />
           <span>Air, Mould &amp; Pollen</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" loading="lazy" />
+          <img src="./Icons/Water-Icon.svg" alt="Tap Water Quality" loading="lazy" width="44" height="44" decoding="async" />
           <span>Tap Water Quality</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" loading="lazy" />
+          <img src="./Icons/Nutrition-Icon.svg" alt="Nutrition" loading="lazy" width="44" height="44" decoding="async" />
           <span>Nutrition</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" loading="lazy" />
+          <img src="./Icons/DEXA-Icon.svg" alt="DEXA Scans" loading="lazy" width="44" height="44" decoding="async" />
           <span>DEXA Scans</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" loading="lazy" />
+          <img src="./Icons/Measurements-Icon.svg" alt="Body Composition" loading="lazy" width="44" height="44" decoding="async" />
           <span>Body Composition</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Fitness-Icon.svg" alt="Exercise" loading="lazy" />
+          <img src="./Icons/Fitness-Icon.svg" alt="Exercise" loading="lazy" width="44" height="44" decoding="async" />
           <span>Exercise</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Heart-Icon.svg" alt="Heart Health" loading="lazy" />
+          <img src="./Icons/Heart-Icon.svg" alt="Heart Health" loading="lazy" width="44" height="44" decoding="async" />
           <span>Heart Health</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Environment-Icon.svg" alt="Environment" loading="lazy" />
+          <img src="./Icons/Environment-Icon.svg" alt="Environment" loading="lazy" width="44" height="44" decoding="async" />
           <span>Environment</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/BloodSugar-Icon.svg" alt="Blood Sugar" loading="lazy" />
+          <img src="./Icons/BloodSugar-Icon.svg" alt="Blood Sugar" loading="lazy" width="44" height="44" decoding="async" />
           <span>Blood Sugar</span>
         </div>
         <div class="source-item">
-          <img src="./Icons/Peptides-Icon.svg" alt="Peptides" loading="lazy" />
+          <img src="./Icons/Peptides-Icon.svg" alt="Peptides" loading="lazy" width="44" height="44" decoding="async" />
           <span>Peptides</span>
         </div>
       </div>
@@ -1365,10 +1399,10 @@
 
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
       <defs>
-        <filter id="wireGlowBlur" x="-20%" y="-400%" width="140%" height="900%" color-interpolation-filters="sRGB">
+        <filter id="wireGlowBlur" x="-20%" y="-250%" width="140%" height="600%" color-interpolation-filters="sRGB">
           <feGaussianBlur stdDeviation="4.5" />
         </filter>
-        <filter id="wireCoreBlur" x="-10%" y="-200%" width="120%" height="500%" color-interpolation-filters="sRGB">
+        <filter id="wireCoreBlur" x="-10%" y="-125%" width="120%" height="350%" color-interpolation-filters="sRGB">
           <feGaussianBlur stdDeviation="0.6" />
         </filter>
         <linearGradient id="hg" x1="0" y1="1" x2="1" y2="0">
@@ -1434,7 +1468,7 @@
                 <circle class="hub-pulse" cx="50" cy="50" r="22"/>
               </svg>
             </div>
-            <img class="hub-wordmark" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne" />
+            <img class="hub-wordmark" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne" decoding="async" />
             <div class="hub-label">Optimisation Engine</div>
           </div>
           <div class="flow-advice">
@@ -1462,7 +1496,7 @@
 
     <section class="privacy-section">
       <h2 class="section-title privacy-title">Built <span class="accent">private by design</span></h2>
-      <p class="privacy-sub">Built by people who value their privacy. QuantumOne is engineered to be anonymous, encrypted, and locked to you.</p>
+      <p class="privacy-sub">Built by people who value their privacy. QuantumOne is engineered to be private, encrypted, and locked to you.</p>
 
       <div class="privacy-grid">
 
@@ -1484,7 +1518,7 @@
             </svg>
           </div>
           <div class="pcard-head">Bound to your device</div>
-          <div class="pcard-copy">Your account is cryptographically bound to your device, so access can't be spoofed from anywhere.</div>
+          <div class="pcard-copy">Your account is cryptographically bound to your device, so access can't be spoofed.</div>
         </div></div>
 
         <!-- 4 BIOMETRIC (proven fingerprint glyph, scaled) -->
@@ -1526,7 +1560,7 @@
             </svg>
           </div>
           <div class="pcard-head">We never learn your name</div>
-          <div class="pcard-copy">No name, no address, no phone number. Your data is tied to a single email, nothing more.</div>
+          <div class="pcard-copy">No name, no address, no phone number. Your data is tied to your email, never a real-world identity.</div>
         </div></div>
 
         <!-- 1 ENCRYPTION -->
@@ -1568,7 +1602,7 @@
             </svg>
           </div>
           <div class="pcard-head">Account and data, kept apart</div>
-          <div class="pcard-copy">A double layer of anonymous IDs separates your account from your health data — even on the inside.</div>
+          <div class="pcard-copy">A double layer of private IDs keeps your account separate from your health data.</div>
         </div></div>
 
         <!-- 5 DATA STORED IN THE USA -->
@@ -1590,7 +1624,7 @@
             </svg>
           </div>
           <div class="pcard-head">Data stored in the USA</div>
-          <div class="pcard-copy">All your data is processed and stored on US-based infrastructure — it never leaves the country.</div>
+          <div class="pcard-copy">All your data is processed and stored on US-based infrastructure. It stays on home soil.</div>
         </div></div>
 
       </div>
@@ -1599,6 +1633,7 @@
     <!-- Advice Showcase -->
     <div class="advice-section">
       <h2 class="section-title advice-section-label">What <span class="accent">the engine delivers</span></h2>
+      <div class="advice-disclaimer">Illustrative examples. Not medical advice.</div>
       <div class="advice-carousel" id="adviceCarousel">
 
         <div class="advice-card active">
@@ -1672,11 +1707,11 @@
       </details>
       <details class="faq-item">
         <summary class="faq-q">Is my health data private?<span class="faq-chev" aria-hidden="true">+</span></summary>
-        <div class="faq-a">Yes. QuantumOne is anonymous by design. No name or address is stored, any geolocation data (used for weather, air quality, pollen, etc) is only accurate to ~15 miles. Your data is encrypted at rest and in transit, and your account is locked to your device with biometric security.</div>
+        <div class="faq-a">Yes. QuantumOne is private by design. No name or address is stored. Any geolocation data (used for weather, air quality, pollen, etc) is only accurate to ~15 miles. Your data is encrypted at rest and in transit, your account is locked to your device with biometric security, and your health data is de-identified and separated from the email that identifies your account.</div>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Is my genetic data safe?<span class="faq-chev" aria-hidden="true">+</span></summary>
-        <div class="faq-a">Your raw genetic file is used for one purpose: personalising your correlations and advice. Like everything else in QuantumOne, it is anonymous by design, encrypted at rest and in transit.</div>
+        <div class="faq-a">Your raw genetic file is used for one purpose: personalising your correlations and advice. Like everything else in QuantumOne, it is private by design, de-identified, and encrypted at rest and in transit.</div>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Does QuantumOne give medical advice?<span class="faq-chev" aria-hidden="true">+</span></summary>
@@ -1755,7 +1790,7 @@
       "name": "Is my health data private?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. QuantumOne is anonymous by design. No name or address is stored, any geolocation data (used for weather, air quality, pollen, etc) is only accurate to ~15 miles. Your data is encrypted at rest and in transit, and your account is locked to your device with biometric security."
+        "text": "Yes. QuantumOne is private by design. No name or address is stored. Any geolocation data (used for weather, air quality, pollen, etc) is only accurate to ~15 miles. Your data is encrypted at rest and in transit, your account is locked to your device with biometric security, and your health data is de-identified and separated from the email that identifies your account."
       }
     },
     {
@@ -1763,7 +1798,7 @@
       "name": "Is my genetic data safe?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Your raw genetic file is used for one purpose: personalising your correlations and advice. Like everything else in QuantumOne, it is anonymous by design, encrypted at rest and in transit."
+        "text": "Your raw genetic file is used for one purpose: personalising your correlations and advice. Like everything else in QuantumOne, it is private by design, de-identified, and encrypted at rest and in transit."
       }
     },
     {
@@ -1804,28 +1839,33 @@
 
     <!-- Bottom CTA -->
     <div class="bottom-cta">
-      <div class="bottom-cta-label">Get early access</div>
-      <form class="email-form" id="earlyAccessFormBottom" onsubmit="return handleSubmitBottom(event)">
+      <div class="bottom-cta-label">Get priority access</div>
+      <form class="email-form" id="earlyAccessFormBottom" onsubmit="return submitEarlyAccess(event, 'bottom')">
         <input
           type="email"
+          inputmode="email"
           class="email-input"
           id="emailInputBottom"
           placeholder="Your email"
           required
           autocomplete="email"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
           aria-label="Email address for early access"
         />
         <div class="hp-field" aria-hidden="true">
           <label for="companyBottom">Company</label>
           <input type="text" id="companyBottom" name="company" tabindex="-1" autocomplete="off" />
         </div>
-        <button type="submit" class="submit-btn submit-btn-sm" id="submitBtnBottom">Reserve early access</button>
+        <button type="submit" class="submit-btn submit-btn-sm" id="submitBtnBottom">Request invitation</button>
       </form>
       <div class="form-success" id="formSuccessBottom">
         <span class="success-check">✓</span>
         You're on the list.<br/>You'll be among the first when the Personal Optimisation Engine launches.
       </div>
       <div class="form-err" id="formErrBottom">Please enter a valid email address.</div>
+      <div class="form-consent">By submitting, you agree to our <a href="https://www.quantumone.app/website-terms-of-use.html">Website Terms</a> and <a href="https://www.quantumone.app/privacy.html">Privacy Policy</a>.</div>
     </div>
 
     <!-- Footer -->
@@ -1833,7 +1873,9 @@
       <div class="footer-cols">
         <!-- Brand + social -->
         <div class="footer-brand">
-          <img class="footer-logo" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" />
+          <a href="https://www.quantumone.app/" class="footer-logo-link">
+            <img class="footer-logo" src="./Logo/Combo_Wordmark.svg" alt="QuantumOne — Personal Optimisation Engine" decoding="async" />
+          </a>
           <div class="footer-tagline">The first personal optimisation engine.</div>
           <a class="footer-social" href="https://x.com/quantumone_" target="_blank" rel="noopener noreferrer" aria-label="Follow QuantumOne on X">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1885,12 +1927,8 @@
     // Replaces the former Three.js implementation. No external deps.
     // Colour mode locked to 'linear' (matches the prior Three.js
     // ColorManagement output, confirmed by side-by-side comparison).
+    // Exposes start()/dispose() and window._drawConnectionLines hook.
     // ============================================================
-// ============================================================
-// Geolines — Raw WebGL renderer (WebGL 1, GLSL ES 1.0)
-// Drop-in replacement for the Three.js version.
-// Exposes start()/dispose() and window._drawConnectionLines hook.
-// ============================================================
 
 function createGeolinesRaw(opts) {
   const COLOR_MODE = opts && opts.colorMode ? opts.colorMode : 'linear'; // 'linear' | 'srgb'
@@ -2406,19 +2444,24 @@ function createGeolinesRaw(opts) {
 
   function update() {
     const pc = CONFIG.particleCount, nl = CONFIG.numLines, cs = CONFIG.chaosStrength;
+    // Perf (#12): compare against a per-frame threshold instead of adding timeOffset
+    // to every particle. eff > 1.0  ⟺  tArr > 1.0 - timeOffset, and the min eff is
+    // (min tArr) + timeOffset — so the inner loop drops 3600 additions/frame while
+    // producing identical resets.
+    const thresh = 1.0 - timeOffset;
     let anyReset = false;
     for (let lineIndex = 0; lineIndex < nl; lineIndex++) {
       const base = lineIndex * pc;
       let overCount = 0;
-      let currentMin = Infinity;
+      let minT = Infinity;
       for (let i = 0; i < pc; i++) {
-        const eff = tArr[base + i] + timeOffset;
-        if (eff > 1.0) overIndices[overCount++] = i;
-        else if (eff < currentMin) currentMin = eff;
+        const t = tArr[base + i];
+        if (t > thresh) overIndices[overCount++] = i;
+        else if (t < minT) minT = t;
       }
       if (overCount > 0) {
         anyReset = true;
-        if (currentMin === Infinity) currentMin = 0;
+        const currentMin = (minT === Infinity) ? 0 : minT + timeOffset;
         for (let k = 0; k < overCount; k++) {
           const pi = base + overIndices[k];
           const ri = pi * 3;
@@ -2457,6 +2500,10 @@ function createGeolinesRaw(opts) {
     if (timestamp === undefined) return; // first manual call: wait for rAF timestamp
     const rawDelta = getDelta(timestamp);
     const delta = Math.min(rawDelta, CONFIG.maxDelta);
+
+    // Privacy cipher churn (#10) — ticked here so it stays frame-aligned and never
+    // lands mid-frame pushing this callback late. No-op unless its section is visible.
+    if (window._cipherTick) window._cipherTick(timestamp);
 
     // Scroll-hidden: keep the connection-line bridge ticking; skip all particle + GPU work
     if (renderPaused) {
@@ -2576,16 +2623,17 @@ function createGeolinesRaw(opts) {
 
     // Scroll-linked visibility (element-anchored):
     //   fade OUT when the flow ANIMATION (#flowStage) enters the viewport (mobile + desktop);
-    //   fade IN when privacy cards enter — 2nd row on desktop (3-col), 1st row on mobile (2-col).
+    //   fade IN when privacy cards enter — 2nd row in the multi-column layouts (3- or 2-col),
+    //   1st card in the single-column horizontal layout (≤460px).
     //   Rendering pauses only after the fade completes, and resumes before fading back in.
     (function () {
       const cv = _geolines.canvas;
       const flow = document.getElementById('flowStage');
       const pcards = document.querySelectorAll('.privacy-section .pcard');
       if (!cv || !flow || pcards.length < 4 || !('IntersectionObserver' in window)) return;
-      const row1 = pcards[0];                          // mobile (2-col): first row
-      const row2 = pcards[3];                          // desktop (3-col): first card of the second row
-      const mq = window.matchMedia('(max-width: 680px)');
+      const row1 = pcards[0];                          // single-column (≤460px): first card
+      const row2 = pcards[3];                          // multi-column (3-/2-col): first card of the second row
+      const mq = window.matchMedia('(max-width: 460px)');
       let flowVis = false, row1Vis = false, row2Vis = false, hidden = false, pauseTimer = null;
       function apply() {
         const privVis = mq.matches ? row1Vis : row2Vis;
@@ -2650,34 +2698,42 @@ function createGeolinesRaw(opts) {
 
     function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v || '').trim()) && v.trim().length > 5; }
 
-    function handleSubmit(e) {
+    // Both early-access forms share identical logic; the only differences are element
+    // IDs and that only the top form has a note. One config-driven handler (#13).
+    var EA_FORMS = {
+      top:    { form: 'earlyAccessForm',       email: 'emailInput',       err: 'formErr',       btn: 'submitBtn',       success: 'formSuccess',       note: 'formNote', honeypot: 'companyTop' },
+      bottom: { form: 'earlyAccessFormBottom', email: 'emailInputBottom', err: 'formErrBottom', btn: 'submitBtnBottom', success: 'formSuccessBottom', note: null,       honeypot: 'companyBottom' }
+    };
+
+    function submitEarlyAccess(e, which) {
       e.preventDefault();
+      var cfg = EA_FORMS[which];
+      var other = EA_FORMS[which === 'top' ? 'bottom' : 'top'];
 
       // Honeypot: if filled, it's a bot. Show success, send nothing.
-      var hpTop = document.getElementById('companyTop');
-      if (hpTop && hpTop.value) {
-        document.getElementById('earlyAccessForm').style.display = 'none';
-        var nTop = document.getElementById('formNote'); if (nTop) nTop.style.display = 'none';
-        document.getElementById('formSuccess').classList.add('visible');
+      var hp = document.getElementById(cfg.honeypot);
+      if (hp && hp.value) {
+        document.getElementById(cfg.form).style.display = 'none';
+        if (cfg.note) { var n = document.getElementById(cfg.note); if (n) n.style.display = 'none'; }
+        document.getElementById(cfg.success).classList.add('visible');
         return;
       }
 
-      var emailTop = document.getElementById('emailInput').value;
-      var errTop = document.getElementById('formErr');
-      if (!validEmail(emailTop)) {
-        if (errTop) errTop.classList.add('show');
+      var email = document.getElementById(cfg.email).value;
+      var err = document.getElementById(cfg.err);
+      if (!validEmail(email)) {
+        if (err) err.classList.add('show');
         return;
       }
-      if (errTop) errTop.classList.remove('show');
+      if (err) err.classList.remove('show');
 
-      const btn = document.getElementById('submitBtn');
+      const btn = document.getElementById(cfg.btn);
       if (btn.disabled) return;
       btn.disabled = true;
 
-      const email = emailTop;
-      const form = document.getElementById('earlyAccessForm');
-      const success = document.getElementById('formSuccess');
-      const note = document.getElementById('formNote');
+      const form = document.getElementById(cfg.form);
+      const success = document.getElementById(cfg.success);
+      const note = cfg.note ? document.getElementById(cfg.note) : null;
 
       btn.classList.add('pulsing');
 
@@ -2699,77 +2755,18 @@ function createGeolinesRaw(opts) {
 
       setTimeout(() => {
         form.style.display = 'none';
-        note.style.display = 'none';
+        if (note) note.style.display = 'none';
         success.classList.add('visible');
 
-        // Sync: disable the bottom form too
-        var bottomForm = document.getElementById('earlyAccessFormBottom');
-        var bottomSuccess = document.getElementById('formSuccessBottom');
-        var bottomBtn = document.getElementById('submitBtnBottom');
-        if (bottomForm) bottomForm.style.display = 'none';
-        if (bottomBtn) bottomBtn.disabled = true;
-        if (bottomSuccess) bottomSuccess.classList.add('visible');
-      }, 400);
-    }
-
-    function handleSubmitBottom(e) {
-      e.preventDefault();
-
-      // Honeypot: if filled, it's a bot. Show success, send nothing.
-      var hpBot = document.getElementById('companyBottom');
-      if (hpBot && hpBot.value) {
-        document.getElementById('earlyAccessFormBottom').style.display = 'none';
-        document.getElementById('formSuccessBottom').classList.add('visible');
-        return;
-      }
-
-      var emailBot = document.getElementById('emailInputBottom').value;
-      var errBot = document.getElementById('formErrBottom');
-      if (!validEmail(emailBot)) {
-        if (errBot) errBot.classList.add('show');
-        return;
-      }
-      if (errBot) errBot.classList.remove('show');
-
-      const btn = document.getElementById('submitBtnBottom');
-      if (btn.disabled) return;
-      btn.disabled = true;
-
-      const email = emailBot;
-      const form = document.getElementById('earlyAccessFormBottom');
-      const success = document.getElementById('formSuccessBottom');
-
-      btn.classList.add('pulsing');
-
-      const googleForm = document.createElement('form');
-      googleForm.method = 'POST';
-      googleForm.action = 'https://docs.google.com/forms/d/e/1FAIpQLScdKzTfV8XFIxG9m-l0yO79t5o8TIbCy0ysPtKJQ6DGiGuRGw/formResponse';
-      googleForm.target = 'google-form-target';
-      googleForm.style.display = 'none';
-
-      const input = document.createElement('input');
-      input.name = 'entry.1125282240';
-      input.value = email;
-      googleForm.appendChild(input);
-      appendSourceField(googleForm);
-
-      document.body.appendChild(googleForm);
-      googleForm.submit();
-      document.body.removeChild(googleForm);
-
-      setTimeout(() => {
-        form.style.display = 'none';
-        success.classList.add('visible');
-
-        // Sync: disable the top form too
-        var topForm = document.getElementById('earlyAccessForm');
-        var topSuccess = document.getElementById('formSuccess');
-        var topNote = document.getElementById('formNote');
-        var topBtn = document.getElementById('submitBtn');
-        if (topForm) topForm.style.display = 'none';
-        if (topNote) topNote.style.display = 'none';
-        if (topBtn) topBtn.disabled = true;
-        if (topSuccess) topSuccess.classList.add('visible');
+        // Sync: disable the other form too
+        var oForm = document.getElementById(other.form);
+        var oSuccess = document.getElementById(other.success);
+        var oBtn = document.getElementById(other.btn);
+        var oNote = other.note ? document.getElementById(other.note) : null;
+        if (oForm) oForm.style.display = 'none';
+        if (oNote) oNote.style.display = 'none';
+        if (oBtn) oBtn.disabled = true;
+        if (oSuccess) oSuccess.classList.add('visible');
       }, 400);
     }
 
@@ -2789,7 +2786,21 @@ function createGeolinesRaw(opts) {
     // ── 3D tilt — rect cached on mouseenter, not per mousemove ──
     function applyTilt(el) {
       if (!el) return;
-      let rect;
+      // Mouse/desktop only: skip the tilt on touch devices (no hover + fine pointer),
+      // where synthesised mouse events would otherwise fight scrolling and swiping.
+      if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+      // Perf: coalesce transform writes to one rAF per frame (mirrors the
+      // cursor-glow pattern below). A high-poll mouse fires many mousemoves per
+      // frame; the browser only renders the last value, so batching drops the
+      // redundant handler work + style invalidations that can delay the particle
+      // rAF loop. Rendered output per frame is identical; listener is passive.
+      let rect, rx = 0, ry = 0, dirty = false, raf = null;
+      function flush() {
+        raf = null;
+        if (!dirty) return;
+        dirty = false;
+        el.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      }
       el.addEventListener('mouseenter', () => {
         rect = el.getBoundingClientRect();
       });
@@ -2799,13 +2810,15 @@ function createGeolinesRaw(opts) {
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        const rotateX = (y - centerY) / centerY * -2;
-        const rotateY = (x - centerX) / centerX * 2;
-
-        el.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      });
+        rx = (y - centerY) / centerY * -2;
+        ry = (x - centerX) / centerX * 2;
+        dirty = true;
+        if (raf === null) raf = requestAnimationFrame(flush);
+      }, { passive: true });
 
       el.addEventListener('mouseleave', () => {
+        if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+        dirty = false;
         el.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
       });
     }
@@ -3150,12 +3163,27 @@ function createGeolinesRaw(opts) {
       let currentCard = 0;
       let autoAdvance;
 
+      // Set the carousel's height to the active card's real rendered height, so the
+      // gap to the dots is minimal on every card and every viewport (the cards are
+      // position:absolute, so the container can't size to them on its own). Measured
+      // live, so it's correct regardless of font/device/text-wrapping.
+      const carouselForHeight = document.getElementById('adviceCarousel');
+      function syncCarouselHeight() {
+        if (!carouselForHeight) return;
+        const active = adviceCards[currentCard];
+        if (!active) return;
+        const inner = active.querySelector('.advice-card-inner') || active;
+        const h = Math.ceil(inner.getBoundingClientRect().height);
+        if (h > 0) carouselForHeight.style.height = h + 'px';
+      }
+
       function goToCard(index) {
         adviceCards[currentCard].classList.remove('active');
         dots[currentCard].classList.remove('active');
         currentCard = index;
         adviceCards[currentCard].classList.add('active');
         dots[currentCard].classList.add('active');
+        syncCarouselHeight();
       }
 
       function startAutoAdvance() {
@@ -3177,6 +3205,30 @@ function createGeolinesRaw(opts) {
         });
       });
 
+      // Touch swipe navigation (mobile): left = next, right = previous. Acts only on a
+      // clearly horizontal gesture, and listeners are passive, so vertical page
+      // scrolling over the carousel is unaffected.
+      const swipeEl = document.getElementById('adviceCarousel');
+      if (swipeEl) {
+        let sx = 0, sy = 0, swiping = false;
+        swipeEl.addEventListener('touchstart', (e) => {
+          if (e.touches.length !== 1) { swiping = false; return; }
+          sx = e.touches[0].clientX; sy = e.touches[0].clientY; swiping = true;
+        }, { passive: true });
+        swipeEl.addEventListener('touchend', (e) => {
+          if (!swiping) return;
+          swiping = false;
+          const t = e.changedTouches[0];
+          const dx = t.clientX - sx, dy = t.clientY - sy;
+          if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+            clearInterval(autoAdvance);
+            const n = adviceCards.length;
+            goToCard(dx < 0 ? (currentCard + 1) % n : (currentCard - 1 + n) % n);
+            startAutoAdvance();
+          }
+        }, { passive: true });
+      }
+
       // Auto-advance only while the carousel is on screen
       const carouselEl = document.getElementById('adviceCarousel');
       if (carouselEl && 'IntersectionObserver' in window) {
@@ -3190,6 +3242,23 @@ function createGeolinesRaw(opts) {
       } else {
         startAutoAdvance();
       }
+
+      // Initial height (after fonts load so the measurement uses DM Sans, not a fallback),
+      // and re-sync on resize/orientation change since card height varies with width.
+      function initHeight() { syncCarouselHeight(); }
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(initHeight);
+      }
+      window.addEventListener('load', initHeight);
+      initHeight();
+      let _carouselResizeRAF = null;
+      window.addEventListener('resize', () => {
+        if (_carouselResizeRAF !== null) return;
+        _carouselResizeRAF = requestAnimationFrame(() => {
+          _carouselResizeRAF = null;
+          syncCarouselHeight();
+        });
+      });
     }
   </script>
 
@@ -3197,9 +3266,18 @@ function createGeolinesRaw(opts) {
   <script>
     (function () {
       var CH = 'ABCDEF0123456789#%&$*+=/<>?!@ABCDEF0123456789';
-      var COLS = 28, ROWS = 17, TOTAL = COLS * ROWS;
-      var churn = Math.max(1, Math.floor(TOTAL * 0.08));
       var BASE = 95, FAST = 63;
+      // The cipher grid matches the tile's shape: a square-ish block on the square
+      // desktop tiles, and a wide/short rectangle on the rectangular mobile tiles,
+      // so the text fills the card instead of sitting as a narrow block in a wide one.
+      var mqNarrow = window.matchMedia('(max-width: 460px)');
+      var COLS, ROWS, TOTAL, churn;
+      function setDims() {
+        if (mqNarrow.matches) { COLS = 48; ROWS = 7; }   // mobile: wide rectangle
+        else { COLS = 28; ROWS = 17; }                    // desktop: square-ish
+        TOTAL = COLS * ROWS;
+        churn = Math.max(1, Math.floor(TOTAL * 0.08));
+      }
       function rc() { return CH.charAt(Math.floor(Math.random() * CH.length)); }
       function render(el) {
         var c = el._chars, s = '';
@@ -3210,36 +3288,68 @@ function createGeolinesRaw(opts) {
         for (var k = 0; k < churn; k++) { el._chars[Math.floor(Math.random() * TOTAL)] = rc(); }
         render(el);
       }
+      function fill(el) {
+        var c = []; for (var i = 0; i < TOTAL; i++) c.push(rc());
+        el._chars = c; render(el);
+      }
       var nodes = Array.prototype.slice.call(document.querySelectorAll('.pcard-cipher'));
       if (!nodes.length) return;
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setDims();
       nodes.forEach(function (el) {
-        var c = []; for (var i = 0; i < TOTAL; i++) c.push(rc());
-        el._chars = c; render(el);
+        fill(el);
         if (reduce) return;
+        el._hover = false; el._lastFast = 0;
         var card = el.closest('.pcard');
         if (!card) return;
         card.addEventListener('mouseenter', function () {
-          if (!el._fast) { scramble(el); el._fast = setInterval(function () { scramble(el); }, FAST); }
+          el._hover = true; el._lastFast = performance.now(); scramble(el);
         });
-        card.addEventListener('mouseleave', function () {
-          if (el._fast) { clearInterval(el._fast); el._fast = null; }
-        });
+        card.addEventListener('mouseleave', function () { el._hover = false; });
       });
+      // Rebuild the grid at the new dimensions when crossing the mobile breakpoint
+      // (e.g. phone rotation or desktop window resize), so it always fits the tile.
+      var rebuild = function () { setDims(); for (var i = 0; i < nodes.length; i++) fill(nodes[i]); };
+      if (mqNarrow.addEventListener) mqNarrow.addEventListener('change', rebuild);
+      else if (mqNarrow.addListener) mqNarrow.addListener(rebuild);
       if (reduce) return;
-      var baseTimer = null;
-      function startBase() {
-        if (!baseTimer) baseTimer = setInterval(function () {
-          for (var i = 0; i < nodes.length; i++) { if (!nodes[i]._fast) scramble(nodes[i]); }
-        }, BASE);
+
+      /* Perf (#10): churn used two setInterval timers (95ms base + 63ms/hover) that
+         landed at arbitrary points in the frame, so a 6×476-char textContent rebuild
+         (text layout + masked repaint) could push the Geolines rAF callback late and
+         hitch the particle field they share the privacy section with. Same glyphs and
+         cadence — but now ticked from the existing rAF loop so it's frame-aligned. */
+      var baseVisible = false, lastBase = 0, selfRAF = null, driven = false;
+      function tick(now) {
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          if (el._hover && now - el._lastFast >= FAST) { el._lastFast = now; scramble(el); }
+        }
+        if (baseVisible && now - lastBase >= BASE) {
+          lastBase = now;
+          for (var j = 0; j < nodes.length; j++) { if (!nodes[j]._hover) scramble(nodes[j]); }
+        }
       }
-      function stopBase() { if (baseTimer) { clearInterval(baseTimer); baseTimer = null; } }
+      // Driven by the existing Geolines rAF loop (no separate loop in the common case).
+      window._cipherTick = function (now) {
+        driven = true;
+        if (selfRAF !== null) { cancelAnimationFrame(selfRAF); selfRAF = null; }
+        tick(now);
+      };
+      // Safety net: if that loop never runs (e.g. WebGL unavailable), self-drive with one rAF.
+      setTimeout(function () {
+        if (driven) return;
+        (function self(now) { selfRAF = requestAnimationFrame(self); tick(now || performance.now()); })();
+      }, 1000);
+
       var section = document.querySelector('.privacy-section');
       if (section && 'IntersectionObserver' in window) {
         new IntersectionObserver(function (entries) {
-          if (entries[0].isIntersecting) startBase(); else stopBase();
+          var vis = entries[0].isIntersecting;
+          if (vis && !baseVisible) lastBase = performance.now();
+          baseVisible = vis;
         }, { threshold: 0 }).observe(section);
-      } else { startBase(); }
+      } else { baseVisible = true; }
     })();
   </script>
 
@@ -3549,9 +3659,20 @@ function createGeolinesRaw(opts) {
       stage.addEventListener('mouseenter', function () { paused = true; clearTimeout(timer); });
       stage.addEventListener('mouseleave', function () { paused = false; schedule(); });
     }
-    var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(relayout, 150); });
-    window.addEventListener('load', relayout);
-    if (document.fonts && document.fonts.ready && document.fonts.ready.then) { document.fonts.ready.then(function () { relayout(); }); }
+    // Perf: coalesce the load / font-swap / resize relayouts into one rAF-aligned
+    // pass. relayout() does ~25 getBoundingClientRect reads + DOM re-parenting, and
+    // load + fonts.ready often fire within the same frame, so batching avoids a
+    // duplicate forced synchronous layout. Geometry output is identical. (The
+    // initial relayout() below stays synchronous so the diagram builds immediately.)
+    var layoutScheduled = false;
+    function scheduleRelayout() {
+      if (layoutScheduled) return;
+      layoutScheduled = true;
+      requestAnimationFrame(function () { layoutScheduled = false; relayout(); });
+    }
+    var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(scheduleRelayout, 150); });
+    window.addEventListener('load', scheduleRelayout);
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) { document.fonts.ready.then(scheduleRelayout); }
 
     // Pause all section animation + the auto-advance timer while scrolled out of view.
     var sect = stage.closest('section') || stage;
